@@ -1,0 +1,8 @@
+{% extends 'layouts/inner-layout.html' %}{% from 'components/icon.html' import icon %}
+{% block head %}<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#04060b"><title>{% block title %}{% endblock %} – PHE PHIM AI</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet"><link rel="icon" href="/assets/favicon-32.png"><link rel="stylesheet" href="/movies.css"><link rel="stylesheet" href="/auth.css"><link rel="stylesheet" href="/static/css/account.css"><link rel="stylesheet" href="/static/css/account-responsive.css">{% endblock %}
+{% block body_attributes %} class="account-center"{% endblock %}
+{% block content %}<div class="account-scene" aria-hidden="true"><div class="account-scene-image"></div><div class="account-scene-glow"></div><div class="account-scene-line"></div></div>
+<main class="account-shell"><div class="account-topline"><a href="/">{{ icon('arrow-left') }} Trở về khám phá</a><span>TÀI KHOẢN / PHE PHIM AI</span></div>{% include 'components/account-header.html' %}
+<div class="account-grid">{% include 'components/account-navigation.html' %}<section class="account-content" aria-labelledby="section-title">{% block account_content %}{% endblock %}</section></div>
+</main>
+<script type="module" src="/auth.js"></script><script type="module" src="/static/js/account/navigation.js"></script>{% block account_scripts %}{% endblock %}{% endblock %}
