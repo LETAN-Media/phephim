@@ -1,0 +1,9 @@
+// Original homepage SVG curve generator, shared without adding a rendering loop.
+(function () {
+function buildIntro(m){var at=document.getElementById("bbw"),rt=16/9;if(at){for(var t=window.innerWidth||1,e=Math.max(1,m*rt/t),n=96*Math.min(e,1.05),o=Math.min(e,1.5),i=100,a=t<=820?3:2,r=[],s=[],d=[],l=0,c=0;c<11;c++){for(var u=50+(c/10-.5)*n,f=l%2?57:50,h=[],p=0;p<=10;p++){var v=p/10,y=Math.pow(Math.min(v/.9,1),2.3);if(y>=1)h.push(f);else{var g=Math.sin(v*Math.PI*2.1+1.55*c)*(6-4.5*v)*o;h.push(u*(1-y)+f*y+g*(1-.92*y))}}for(var x="M"+h[0].toFixed(1)+" 0",w=1;w<=10;w++){var b=(w-1)*i,M=w*i;x+=" C"+h[w-1].toFixed(1)+" "+(b+.55*i)+" "+h[w].toFixed(1)+" "+(M-.55*i)+" "+h[w].toFixed(1)+" "+M}var E=l%3==1?"var(--dk)":"var(--f9)";if(r.push('<path d="'+x+'" stroke="'+E+'" stroke-width="'+(l%2?1.2:.9)+'" opacity="'+(.2+l%3*.07).toFixed(2)+'" vector-effect="non-scaling-stroke"/>'),l%a===0&&s.push('<path class="yzz" d="'+x+'" stroke="'+E+'" stroke-width="1.6" opacity="'+(.55+l%2*.2).toFixed(2)+'" pathLength="1" stroke-dasharray="0.02 0.98" style="animation-duration:'+(11+2.7*l%10).toFixed(1)+"s;animation-delay:-"+(3.3*l%18).toFixed(1)+'s" vector-effect="non-scaling-stroke"/>'),4===l||7===l){var F=4===l?0:1;d.push('<path class="ivx" d="'+x+'" stroke="'+E+'" stroke-width="'+(0===F?1.7:1.8)+'" opacity="'+(0===F?"0.92":"0.88")+'" pathLength="1" stroke-dasharray="0.038 0.962" style="--ro:'+(0===F?"5.20":"5.70")+"s;--ja:"+(0===F?"0.00":"0.10")+'s" vector-effect="non-scaling-stroke"/>')}l++}at.innerHTML='<svg viewBox="0 0 100 1000" preserveAspectRatio="none">'+r.join("")+s.join("")+d.join("")+"</svg>"}}
+window.PheEnergy = {buildIntro: buildIntro};
+document.addEventListener('DOMContentLoaded', function () {
+  if (document.body.classList.contains('energy-home')) return;
+  document.documentElement.classList.add('zlt');
+}, {once:true});
+})();

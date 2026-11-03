@@ -1,0 +1,21 @@
+.ui-icon-sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.inner-shell-v2 .ui-icon{width:19px;height:19px;flex:none;display:inline-block;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.inner-shell-v2 .header-v2-account-menu a,.inner-shell-v2 .header-v2-account-menu button{gap:10px}
+.inner-shell-v2 .header-v2-account-menu .ui-icon,.inner-shell-v2 .account-logout .ui-icon{color:inherit;transition:color .25s}
+.inner-shell-v2 .account-logout{display:inline-flex;align-items:center;gap:10px}
+.inner-shell-v2 .account-nav .nav-icon{width:19px;color:inherit}
+.inner-shell-v2 .account-nav .nav-arrow{width:18px;margin-left:auto;padding:0}
+.inner-shell-v2 .sidebar-future-label{display:inline-flex;align-items:center;gap:13px}
+.inner-shell-v2 .security-note>.ui-icon{color:#4fe3e8}
+.inner-shell-v2 .header-v2-menu-button .menu-close-icon{display:none}
+.inner-shell-v2 .header-v2-menu-button[aria-expanded=true] .menu-open-icon{display:none}
+.inner-shell-v2 .header-v2-menu-button[aria-expanded=true] .menu-close-icon{display:block}
+.inner-shell-v2 .header-v2-drawer .ui-icon{color:inherit}
+.inner-shell-v2 .header-v2-avatar .ui-icon{width:18px;height:18px}
+.inner-shell-v2 .identity-avatar .ui-icon{width:32px;height:32px}
+.inner-shell-v2 .account-topline a,.inner-shell-v2 .watch-top a,.inner-shell-v2 .not-found-v2 a,.inner-shell-v2 .player-empty a,.inner-shell-v2 .related-heading a{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:800px){.inner-shell-v2 .account-nav .nav-icon,.inner-shell-v2 .account-nav .nav-arrow{display:none}}
+@media(prefers-reduced-motion:reduce){.inner-shell-v2 .ui-icon{transition:none}}
+
+.inner-shell-v2 .account-logout[hidden]{display:none}
+@media(max-width:800px){.inner-shell-v2 .header-v2-caret{display:none}}

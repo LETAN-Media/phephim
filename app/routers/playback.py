@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request, Query
 from app.schemas.playback import WatchProgress
 from app.services.auth import require_user
-from app.services.catalog import movie_for_slug
+from app.services.catalog import movie_for_slug, catalog
 from app.services.source_service import episodes, episode_exists, sources
 from app.services.playback_service import read_progress, write_progress
 
@@ -14,6 +14,9 @@ def checked_movie(slug):
 
 def checked_episode(slug, episode):
     if episode is not None and not episode_exists(slug,episode): raise HTTPException(404, 'Không tìm thấy tập phim.')
+
+@router.get('/api/movies')
+def movie_catalog(): return {'movies':list(catalog().values())}
 
 @router.get('/api/movies/{slug}')
 def movie(slug:str): return checked_movie(slug)
