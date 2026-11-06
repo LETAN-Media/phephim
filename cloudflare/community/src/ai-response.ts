@@ -4,7 +4,7 @@ import {classify} from './moderation';
 export function safeConversationAnswer(answer:string):string|null{
  const text=answer.trim();
  if(!text||text.length>1200||classify(text,[])==='url'||/<\/?[a-z]/i.test(text))return null;
- if(/\d|tập(?!\s+trung(?:\s|[.,!?;:]|$))|phần\s+(?:tiếp|sau|mới)|mùa\s+(?:tiếp|sau|mới)|lịch|ra mắt|sắp chiếu|đã kết thúc|phát hành|đang chiếu|cập nhật|ngày|tháng|năm|mới nhất/iu.test(text))return null;
+ if(/(?<!\p{L}|\p{N})(?:\d+\s*tập|tập\s*\d+|tập\s+(?:tiếp|sau|mới|cuối)|phần\s+(?:tiếp|sau|mới|\d+)|mùa\s+(?:tiếp|sau|mới|\d+)|\blịch(?:\s+(?:chiếu|phát|ra)|$|[.,!?;:])|ra\s+mắt|sắp\s+chiếu|đã\s+kết\s+thúc|phát\s+hành|đang\s+chiếu|mới\s+nhất|(?:ngày|tháng|năm)\s+\d+|\d{1,2}[/-]\d{1,2}|tháng\s+(?:sau|tới|trước)|năm\s+(?:sau|tới|trước))(?!\p{L}|\p{N})/iu.test(text))return null;
  return text;
 }
 export function verifiedMovieFacts(question:string,count:number,releaseAt:string|null,film?:{title:string;genre?:string}|null):string{

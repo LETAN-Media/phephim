@@ -27,7 +27,12 @@ app.get('/api/community/rooms',async c=>{const sql=neon(c.env.DATABASE_URL);retu
 app.get('/api/community/rooms/:id/messages',async c=>{
  const id=roomId(c.req.param('id'));if(!id||!await publicRoom(c.env,id))return c.json({detail:'Không tìm thấy phòng.'},404);
  const raw=c.req.query('before');const before=raw?roomId(raw):null;if(raw&&!before)return c.json({detail:'Yêu cầu không hợp lệ.'},400);
- const sql=neon(c.env.DATABASE_URL);const rows=await sql.query(`SELECT m.id,m.room_id,m.body,m.created_at,m.user_id,m.is_bot,u.username FROM community_messages m LEFT JOIN users u ON u.id=m.user_id WHERE m.room_id=$1 AND m.deleted_at IS NULL AND ($2::bigint IS NULL OR m.id<$2) AND NOT EXISTS(SELECT 1 FROM community_pins p WHERE p.message_id=m.id) ORDER BY m.id DESC LIMIT 30`,[id,before]);return c.json({messages:rows.reverse().map(normalizeIds)});
+ const sql=neon(c.env.DATABASE_URL);
+ const user=await authenticate(c.req.raw,c.env);
+ if(user&&!before){
+  try{await sql.query('SELECT community_worker_welcome($1,$2)',[id,user.id]);}catch{}
+ }
+ const rows=await sql.query(`SELECT m.id,m.room_id,m.body,m.created_at,m.user_id,m.is_bot,u.username FROM community_messages m LEFT JOIN users u ON u.id=m.user_id WHERE m.room_id=$1 AND m.deleted_at IS NULL AND ($2::bigint IS NULL OR m.id<$2) AND NOT EXISTS(SELECT 1 FROM community_pins p WHERE p.message_id=m.id) ORDER BY m.id DESC LIMIT 30`,[id,before]);return c.json({messages:rows.reverse().map(normalizeIds)});
 });
 app.get('/api/community/rooms/:id/pins',async c=>{
  const id=roomId(c.req.param('id'));if(!id||!await publicRoom(c.env,id))return c.json({detail:'Không tìm thấy phòng.'},404);

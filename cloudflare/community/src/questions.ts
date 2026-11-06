@@ -13,3 +13,12 @@ export function movieQuestion(text:string,recent:string[],movies:Movie[]):{slug:
  return null;
 }
 export function probabilityAllowed(probability:number,random:number):boolean{return Number.isFinite(probability)&&probability>=0&&probability<=1&&random>=0&&random<probability}
+export function isBotMention(text:string):boolean{
+ const norm=normalize(text);
+ return /@(?:hung_?creater|hưng_?creater|hung|hưng|bot|ai)(?!\p{L})/u.test(norm)
+   || /@(?:hung|hưng)\s*creater(?!\p{L})/u.test(norm)
+   || /(?<!\p{L})(?:hưng|hung)\s*creater(?!\p{L})/u.test(norm)
+   || /(?<!\p{L})(?:hưng|hung|bot|ai)\s*(?:ơi|oi)(?!\p{L})/u.test(norm)
+   || /(?<!\p{L})(?:chào|alo|hỏi|gọi)\s+(?:hưng|bot|ai)(?!\p{L})/u.test(norm)
+   || /(?<!\p{L})(?:hưng|bot)\s+(?:cho\s+hỏi|giúp|tư\s+vấn)(?!\p{L})/u.test(norm);
+}

@@ -3,7 +3,7 @@ import {neon} from '@neondatabase/serverless';
 import type {Env,Identity} from './env';
 import {classifyWithContext,spamFingerprint} from './moderation';
 import {effectivePolicy} from './moderation-policy';
-import {isMovieQuestion,movieQuestion,probabilityAllowed} from './questions';
+import {isMovieQuestion,movieQuestion,probabilityAllowed,isBotMention} from './questions';
 import {cooldownAllows} from './cooldown';
 import {safeConversationAnswer,verifiedMovieFacts,composeVerifiedReply} from './ai-response';
 import {containsSensitive} from './sensitive';
@@ -28,9 +28,9 @@ export class ChatRoom extends DurableObject<Env>{
   if(path==='/__diagnostics'&&this.env.STAGING_DIAGNOSTICS==='true')return Response.json({stage:await this.ctx.storage.get('test-ai-stage')||'none',attempts:[...this.ctx.storage.sql.exec<{count:number}>('SELECT count(*) count FROM ai_attempts')][0].count});
   if(path==='/refresh'&&req.method==='POST'){this.broadcast({type:'refresh'});return Response.json({ok:true});}
   if(path==='/reserve-bot'&&req.method==='POST'){
-   let data:{user:number;source:number;room:number};try{data=await req.json()}catch{return Response.json({allowed:false},{status:400})}
+   let data:{user:number;source:number;room:number;explicit?:boolean};try{data=await req.json()}catch{return Response.json({allowed:false},{status:400})}
    if(![data.user,data.source,data.room].every(n=>Number.isSafeInteger(n)&&n>0))return Response.json({allowed:false},{status:400});
-   return Response.json({allowed:this.reserve(data.user,data.source,data.room)});
+   return Response.json({allowed:this.reserve(data.user,data.source,data.room,!!data.explicit)});
   }
   const identity=this.identity(req);if(!identity||!await this.active(identity))return new Response('Unauthorized',{status:401});
   if(path==='/connect'){
@@ -97,8 +97,8 @@ export class ChatRoom extends DurableObject<Env>{
    sql.exec('INSERT INTO request_flood(user_id,client_id,created_ms) VALUES(?,?,?)',user,client,now);return true;
   });
  }
- private reserve(user:number,source:number,room:number):boolean{
-  const now=Date.now();const roomSeconds=Number(this.env.HUNG_CREATER_ROOM_COOLDOWN_SECONDS??120);const userSeconds=Number(this.env.HUNG_CREATER_USER_COOLDOWN_SECONDS??600);const max=Number(this.env.HUNG_CREATER_MAX_REPLIES_PER_HOUR??12);
+ private reserve(user:number,source:number,room:number,explicit=false):boolean{
+  const now=Date.now();const roomSeconds=explicit?3:Number(this.env.HUNG_CREATER_ROOM_COOLDOWN_SECONDS??120);const userSeconds=explicit?5:Number(this.env.HUNG_CREATER_USER_COOLDOWN_SECONDS??600);const max=explicit?120:Number(this.env.HUNG_CREATER_MAX_REPLIES_PER_HOUR??12);
   if(!Number.isFinite(roomSeconds)||!Number.isFinite(userSeconds)||!Number.isInteger(max)||roomSeconds<0||userSeconds<0||max<1)return false;
   return this.ctx.storage.transactionSync(()=>{
    const sql=this.ctx.storage.sql;sql.exec('DELETE FROM ai_attempts WHERE created_ms < ?',now-3600000);
@@ -112,7 +112,7 @@ export class ChatRoom extends DurableObject<Env>{
  private async maybeReply(identity:Attachment,record:SqlRow,body:string){
   try{
    await this.markTest('begin');
-   const explicit=body.toLocaleLowerCase('vi').includes('@hungcreater')||Number.isSafeInteger(record.reply_to_id);
+   const explicit=isBotMention(body)||Number.isSafeInteger(record.reply_to_id);
    if(!explicit&&this.env.HUNG_CREATER_AUTO_REPLY==='false'){await this.markTest('auto-disabled');return}
    if(!explicit&&!isMovieQuestion(body)){await this.markTest('not-film-question');return}
    const movies=await getCatalog(this.env);await this.markTest('catalog');
@@ -120,7 +120,7 @@ export class ChatRoom extends DurableObject<Env>{
    const question=movieQuestion(body,recent.reverse().map(r=>String(r.body)),movies);
    if(!explicit){if(!question){await this.markTest('film-not-identified');return}const probability=Number(this.env.HUNG_CREATER_REPLY_PROBABILITY??.3);const random=crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;if(!probabilityAllowed(probability,random)){await this.markTest('probability-skipped');return}}
    const coordinator=this.env.CHAT_ROOMS.get(this.env.CHAT_ROOMS.idFromName('bot:global'));
-   const reservation=await coordinator.fetch(new Request('https://internal.invalid/reserve-bot',{method:'POST',body:JSON.stringify({user:identity.id,source:Number(record.id),room:identity.room})}));
+   const reservation=await coordinator.fetch(new Request('https://internal.invalid/reserve-bot',{method:'POST',body:JSON.stringify({user:identity.id,source:Number(record.id),room:identity.room,explicit})}));
    const permission=await reservation.json() as {allowed:boolean};if(!permission.allowed){await this.markTest('limited');return}await this.markTest('reserved');
    const film=question?.slug?movies.find(m=>m.slug===question.slug):null;
    const episodes=film?await sql.query('SELECT title FROM movie_episodes WHERE movie_slug=$1 ORDER BY sort_order,episode_key LIMIT 100',[film.slug]):[];
@@ -130,7 +130,8 @@ export class ChatRoom extends DurableObject<Env>{
    if(record.reply_to_id){const prior=await sql.query('SELECT body FROM community_messages WHERE id=$1 AND room_id=$2 AND is_bot AND deleted_at IS NULL',[record.reply_to_id,identity.room]);if(prior[0])safeBody='Tin bot trước: '+String(prior[0].body).slice(0,500)+'\nPhản hồi: '+safeBody;}
    const prompt=`Danh mục được xác nhận: ${JSON.stringify(film||movies.map(({title,slug,genre})=>({title,slug,genre})))}. Tập hiện có trên website (không phải tổng số tập): ${JSON.stringify(episodes)}. Lịch xác nhận: ${JSON.stringify(releases)}.`;
    const verified=film?verifiedMovieFacts(body,Number(counts[0]?.total||0),releases[0]?.release_at?String(releases[0].release_at):null,film):'';
-   const system=verified?'Bạn là Hưng Creater. Viết đúng một câu mở đầu thân thiện bằng tiếng Việt, thật ngắn. Không nêu dữ kiện, tên phim, thể loại, con số, ngày, năm, tập hoặc URL. Dữ kiện xác nhận sẽ được bổ sung riêng.':'Bạn là Hưng Creater. Trả lời ngắn tự nhiên bằng tiếng Việt, 1–3 câu. Chỉ dùng dữ kiện đã xác nhận; nếu thiếu thông tin hãy nói chưa rõ, không suy đoán. Không tự giới thiệu, không thêm URL bên ngoài.';
+   const isGreeting=/(?<!\p{L})(?:chào|hello|hi|alo|hé|helo)(?!\p{L})/iu.test(body);
+   const system=verified?'Bạn là Hưng Creater. Viết đúng một câu mở đầu thân thiện bằng tiếng Việt, thật ngắn. Không nêu dữ kiện, tên phim, thể loại, con số, ngày, năm, tập hoặc URL. Dữ kiện xác nhận sẽ được bổ sung riêng.':isGreeting?'Bạn là Hưng Creater, trợ lý điện ảnh AI của website PHE PHIM AI. Trả lời lời chào thân thiện, ngắn gọn bằng tiếng Việt (1–2 câu), sẵn sàng hỗ trợ tìm phim hoặc thảo luận điện ảnh. Không dẫn URL bên ngoài.':'Bạn là Hưng Creater. Trả lời ngắn tự nhiên bằng tiếng Việt, 1–3 câu. Chỉ dùng dữ kiện đã xác nhận; nếu thiếu thông tin hãy nói chưa rõ, không suy đoán. Không tự giới thiệu, không thêm URL bên ngoài.';
    const format=' Không dùng bất kỳ chữ số nào. Không nhắc ngày, tháng, năm, tập, lịch, phần tiếp theo hay thời điểm phát hành. Chỉ trả lời ngắn, không dùng danh sách đánh số.';
    const aiInput={messages:[{role:'system',content:system+format},{role:'system',content:prompt},{role:'user',content:safeBody.slice(0,1000)}],max_tokens:512,chat_template_kwargs:{enable_thinking:false}};
    const model=this.env.CLOUDFLARE_WORKERS_AI_MODEL||'@cf/zai-org/glm-4.7-flash';const fallback=this.env.CLOUDFLARE_WORKERS_AI_FALLBACK||'@cf/qwen/qwen3-30b-a3b-fp8';
@@ -143,7 +144,14 @@ export class ChatRoom extends DurableObject<Env>{
      safe=safeConversationAnswer(answer);if(safe)break;
     }catch{/* Try only the configured fallback within the same provider. */}
    }
-   if(!safe){await this.markTest('answer-rejected');return}await this.markTest('answer-valid');
+   if(!safe){
+    if(explicit){
+     safe=isGreeting?'Chào bạn! Rất vui được gặp bạn tại Cộng đồng PHE PHIM AI. Hôm nay bạn muốn tìm phim gì để xem thế?':film?'Chào bạn! Về bộ phim này, mình đã kiểm tra dữ liệu hiện có trên PHE PHIM AI cho bạn nhé.':'Chào bạn! Mình là Hưng Creater đây. Bạn cần hỗ trợ tìm phim hay thảo luận gì cứ nhắn mình nhé!';
+    }else{
+     await this.markTest('answer-rejected');return;
+    }
+   }
+   await this.markTest('answer-valid');
    const answer=composeVerifiedReply(safe,verified,film);
    const out=await sql.query('SELECT community_worker_bot_reply($1,$2,$3) AS message',[identity.room,record.id,answer]);if(out[0]?.message)this.broadcast({type:'message',message:out[0].message});await this.markTest('complete');
   }catch(error){await this.markTest('error:'+(error instanceof Error?error.name:'unknown'));console.warn('community-bot: request failed');/* Never log prompts, sessions, credentials or provider responses. */}

@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {classify} from '../src/moderation';
-import {movieQuestion,probabilityAllowed} from '../src/questions';
+import {movieQuestion,probabilityAllowed,isBotMention} from '../src/questions';
 import {cooldownAllows} from '../src/cooldown';
 
 describe('community moderation',()=>{
@@ -56,6 +56,12 @@ describe('AI fact safety',()=>{
   expect(safeConversationAnswer('Bạn có thể tìm hiểu Parasite nhé.')).toBeTruthy();
   expect(safeConversationAnswer('Bộ phim tập trung vào hành trình của nhân vật.')).toBeTruthy();
   expect(safeConversationAnswer('Bạn nên xem tập tiếp theo.')).toBeNull();
+  expect(safeConversationAnswer('Chào bạn! Chúc bạn có một ngày xem phim thật vui vẻ nhé.')).toBeTruthy();
+  expect(safeConversationAnswer('Bộ phim 3 Chàng Ngốc là tác phẩm rất ý nghĩa về tình bạn.')).toBeTruthy();
+ });
+ it('detects all standard bot mentions and vocatives',()=>{
+  for(const text of ['@hungcreater','@hưng creater','@Hưng Creater chào bạn','Hưng ơi có phim gì hay','hung oi','bot ơi','chào hưng','hưng cho hỏi'])expect(isBotMention(text)).toBe(true);
+  for(const text of ['thương hiệu nổi tiếng','khung cảnh đẹp','phim này hay quá mọi người','chúc mọi người buổi tối vui vẻ'])expect(isBotMention(text)).toBe(false);
  });
 });
 import {verifiedMovieFacts} from '../src/ai-response';

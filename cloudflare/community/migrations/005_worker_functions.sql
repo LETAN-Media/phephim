@@ -46,7 +46,7 @@ BEGIN
  INSERT INTO community_welcome_state(user_id,room_id,last_welcomed_at) VALUES(p_user,p_room,now())
  ON CONFLICT(user_id,room_id) DO UPDATE SET last_welcomed_at=now() WHERE community_welcome_state.last_welcomed_at<=now()-interval '24 hours' RETURNING last_welcomed_at INTO v_time;
  IF v_time IS NULL THEN RETURN NULL; END IF;
- INSERT INTO community_messages(room_id,is_bot,body) VALUES(p_room,true,'Chào mừng @'||v_name||E' đến với Hội Đồng PHE PHIM AI!\n\nNơi những người yêu điện ảnh cùng hội tụ, chia sẻ cảm nhận, bàn luận những tình tiết hấp dẫn và khám phá những bộ phim đáng xem.\n\nCứ thoải mái tham gia câu chuyện, biết đâu bạn sẽ tìm được một bộ phim khiến mình không thể rời mắt!\n\nChúc bạn có những cuộc thảo luận thật thú vị cùng cộng đồng.') RETURNING * INTO v_message;
+ INSERT INTO community_messages(room_id,is_bot,body) VALUES(p_room,true,'Chào mừng @'||v_name||E' đến với Cộng đồng PHE PHIM AI!\n\nNơi những người yêu điện ảnh cùng hội tụ, chia sẻ cảm nhận và khám phá những bộ phim đáng xem.\n\nCứ thoải mái trò chuyện và hỏi phim nhé! Chúc bạn có những phút giây thư giãn tuyệt vời.') RETURNING * INTO v_message;
  RETURN to_jsonb(v_message);
 END; $$;
 CREATE FUNCTION community_worker_bot_reply(p_room bigint,p_source bigint,p_body text)

@@ -184,21 +184,27 @@
       const data = await resp.json();
       const messages = Array.isArray(data.messages) ? data.messages : [];
 
-      messagesListEl.innerHTML = '';
-      if (!messages.length) {
-        messagesListEl.innerHTML = `
-          <div class="phe-chat-loading-state">
-            <span>Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên!</span>
-          </div>`;
-      } else {
-        const fragment = document.createDocumentFragment();
-        for (const msg of messages) {
-          fragment.append(renderMessageNode(msg));
+      if (!isLoaded) {
+        messagesListEl.innerHTML = '';
+        if (!messages.length) {
+          messagesListEl.innerHTML = `
+            <div class="phe-chat-loading-state">
+              <span>Chưa có tin nhắn nào. Hãy gửi lời chào đầu tiên!</span>
+            </div>`;
+        } else {
+          const fragment = document.createDocumentFragment();
+          for (const msg of messages) {
+            fragment.append(renderMessageNode(msg));
+          }
+          messagesListEl.append(fragment);
         }
-        messagesListEl.append(fragment);
+        isLoaded = true;
+        scrollToBottom(false);
+      } else {
+        for (const msg of messages) {
+          appendOrUpdateMessage(msg);
+        }
       }
-      isLoaded = true;
-      scrollToBottom(false);
     } catch {
       if (!isLoaded) {
         messagesListEl.innerHTML = `
@@ -260,10 +266,11 @@
 
       if (!isOpen) return;
 
-      // If unauthorized (e.g. guest), fall back to periodic polling
+      // Ensure polling fallback is active if WebSocket is not available
+      startPollingFallback();
+
       if (event.code === 401 || !currentUser) {
         updateStatus('connected');
-        startPollingFallback();
         return;
       }
 
@@ -285,7 +292,7 @@
       if (isOpen && !document.hidden) {
         fetchMessages();
       }
-    }, 4000);
+    }, 3000);
   };
 
   const disconnectWebSocket = () => {
@@ -362,6 +369,11 @@
       textareaEl.style.height = 'auto';
       statusMsgEl.textContent = '';
       scrollToBottom(true);
+
+      // Fast sync polls after sending to catch bot reply immediately
+      setTimeout(fetchMessages, 1500);
+      setTimeout(fetchMessages, 3500);
+      setTimeout(fetchMessages, 6000);
     } catch (err) {
       statusMsgEl.textContent = err.message || 'Lỗi kết nối. Vui lòng thử lại.';
     } finally {
