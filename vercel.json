@@ -1,0 +1,12 @@
+{
+  "regions": ["sin1"],
+  "rewrites": [
+    {"source": "/cong-dong", "destination": "https://phephim-community.hung2nao.workers.dev/cong-dong/"},
+    {"source": "/cong-dong/", "destination": "https://phephim-community.hung2nao.workers.dev/cong-dong/"},
+    {"source": "/cong-dong/static/:path*", "destination": "https://phephim-community.hung2nao.workers.dev/cong-dong/static/:path*"},
+    {"source": "/api/community/:path*", "destination": "https://phephim-community.hung2nao.workers.dev/api/community/:path*"},
+    {"source": "/api/support/:path*", "destination": "https://phephim-community.hung2nao.workers.dev/api/support/:path*"},
+    {"source": "/ws/community/:path*", "destination": "https://phephim-community.hung2nao.workers.dev/ws/community/:path*"},
+    {"source": "/ws/support/:path*", "destination": "https://phephim-community.hung2nao.workers.dev/ws/support/:path*"}
+  ]
+}

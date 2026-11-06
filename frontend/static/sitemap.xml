@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://phephim.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://phephim.vercel.app/phim-bo/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim-le/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/hoat-hinh/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/the-loai/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/tim-kiem/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://phephim.vercel.app/dieu-khoan/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/chinh-sach-rieng-tu/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/dmca/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/canh-bao-do-tuoi/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/lien-he/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/gioi-thieu/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/vo-ngoai-tinh-voi-sep/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/dune-part-two/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/oppenheimer/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/interstellar/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/parasite/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/spirited-away/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/breaking-bad/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://phephim.vercel.app/phim/the-last-of-us/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+</urlset>

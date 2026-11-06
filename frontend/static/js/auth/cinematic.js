@@ -55,6 +55,7 @@ form.addEventListener('submit', async event => {
     if (form.dataset.action === 'login') {
       const target = new URLSearchParams(location.search).get('next') || '';
       const match = target.match(/^\/xem-phim\/[a-z0-9-]+\/?(?:\?episode=[A-Za-z0-9_-]{1,64})?$/);
+      try { sessionStorage.setItem('phe_skip_intro', '1'); } catch (_) {}
       location.href = match ? target : '/';
       return;
     }

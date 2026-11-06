@@ -4,9 +4,64 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from app.routers.pages import templates
 from app.services.auth import require_user
+from app.services.catalog import CATEGORY_META, get_movies_by_category, get_genre_catalog
 
 router = APIRouter()
-SLUGS = {'dune-part-two','oppenheimer','interstellar','parasite','spirited-away','breaking-bad','the-last-of-us','big-buck-bunny-demo'}
+SLUGS = {'dune-part-two','oppenheimer','interstellar','parasite','spirited-away','breaking-bad','the-last-of-us','big-buck-bunny-demo','vo-ngoai-tinh-voi-sep'}
+
+def render_category(request: Request, key: str):
+    meta = CATEGORY_META.get(key)
+    if not meta:
+        raise HTTPException(404)
+    is_genre_catalog = (key == 'the-loai')
+    genre_catalog = get_genre_catalog() if is_genre_catalog else None
+    movies = [] if is_genre_catalog else get_movies_by_category(key)
+    return templates.TemplateResponse(
+        request=request,
+        name='movies/category.html',
+        context={
+            'key': key,
+            'title': meta['title'],
+            'h1': meta['h1'],
+            'eyebrow': meta['eyebrow'],
+            'description': meta['description'],
+            'canonical': meta['canonical'],
+            'noindex': meta['noindex'],
+            'movies': movies,
+            'is_genre_catalog': is_genre_catalog,
+            'genre_catalog': genre_catalog,
+        }
+    )
+
+@router.get('/phim-bo/')
+@router.get('/phim-bo')
+@router.get('/phim-bo/index.html')
+def phim_bo(request: Request):
+    return render_category(request, 'phim-bo')
+
+@router.get('/phim-le/')
+@router.get('/phim-le')
+@router.get('/phim-le/index.html')
+def phim_le(request: Request):
+    return render_category(request, 'phim-le')
+
+@router.get('/phim-ngan/')
+@router.get('/phim-ngan')
+@router.get('/phim-ngan/index.html')
+def phim_ngan(request: Request):
+    return render_category(request, 'phim-ngan')
+
+@router.get('/hoat-hinh/')
+@router.get('/hoat-hinh')
+@router.get('/hoat-hinh/index.html')
+def hoat_hinh(request: Request):
+    return render_category(request, 'hoat-hinh')
+
+@router.get('/the-loai/')
+@router.get('/the-loai')
+@router.get('/the-loai/index.html')
+def the_loai(request: Request):
+    return render_category(request, 'the-loai')
 
 @router.get('/phim/{slug}/')
 @router.get('/phim/{slug}')

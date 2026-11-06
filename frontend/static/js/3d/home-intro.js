@@ -1,1 +1,2 @@
-window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches&&(document.documentElement.className+=" kko")
+window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches&&(document.documentElement.className+=" kko");
+try{if(sessionStorage.getItem('phe_skip_intro')==='1'){document.documentElement.classList.add('phe-skip-intro');}}catch(_){}
