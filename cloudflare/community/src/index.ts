@@ -1,6 +1,6 @@
 import {Hono} from 'hono';
 import {neon} from '@neondatabase/serverless';
-import {authenticate, isAllowedOrigin} from './auth';
+import {authenticate, extractOrigin, isAllowedOrigin} from './auth';
 import type {Env,Identity} from './env';
 import telegram from './telegram/webhook';
 import admin from './admin';
@@ -68,7 +68,7 @@ app.post('/api/community/violations/:id/appeal',async c=>{
 });
 app.get('/ws/community/:id',async c=>{
  const id=roomId(c.req.param('id'));if(!id||!await publicRoom(c.env,id))return c.text('Not found',404);
- if(!isAllowedOrigin(c.req.header('Origin'), c.env))return c.text('Forbidden',403);
+ if(!isAllowedOrigin(extractOrigin(c.req.raw) || c.req.header('Origin'), c.env))return c.text('Forbidden',403);
  const user=await authenticate(c.req.raw,c.env);if(!user)return c.text('Unauthorized',401);
  const stub=c.env.CHAT_ROOMS.get(c.env.CHAT_ROOMS.idFromName(`room:${id}`));return stub.fetch(internal(c.req.raw,user,id,'/connect'));
 });

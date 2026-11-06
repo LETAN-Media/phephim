@@ -1,0 +1,79 @@
+<div id="phe-chat-widget" class="phe-chat-widget" aria-live="polite">
+  <!-- Floating Trigger Button -->
+  <button type="button" class="phe-chat-trigger" aria-label="Mở cộng đồng trò chuyện" aria-haspopup="dialog" aria-expanded="false">
+    <span class="phe-chat-trigger-badge" aria-hidden="true"></span>
+    <svg class="phe-chat-icon-open" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+    <svg class="phe-chat-icon-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  </button>
+
+  <!-- Mini Chat Window -->
+  <section class="phe-chat-window" role="dialog" aria-label="Cộng đồng trò chuyện" aria-modal="false">
+    <!-- Header -->
+    <header class="phe-chat-header">
+      <div class="phe-chat-title-group">
+        <span class="phe-chat-status-dot" aria-hidden="true" title="Trực tuyến"></span>
+        <div class="phe-chat-title-text">
+          <h2 class="phe-chat-title">Cộng đồng</h2>
+          <span class="phe-chat-subtitle">PHE PHIM AI</span>
+        </div>
+      </div>
+      <div class="phe-chat-header-actions">
+        <a href="/cong-dong/" target="_blank" rel="noopener noreferrer" class="phe-chat-btn-icon" title="Mở trang đầy đủ" aria-label="Mở trang đầy đủ">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 7h10v10" />
+            <path d="M7 17 17 7" />
+          </svg>
+        </a>
+        <button type="button" class="phe-chat-btn-icon phe-chat-close-btn" aria-label="Đóng cửa sổ chat" title="Đóng">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Message List -->
+    <div class="phe-chat-messages" role="log" aria-live="polite">
+      <div class="phe-chat-loading-state">
+        <div class="phe-chat-spinner" aria-hidden="true"></div>
+        <span>Đang kết nối cộng đồng…</span>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <footer class="phe-chat-composer">
+      <!-- Authenticated Form -->
+      <form class="phe-chat-form" novalidate>
+        <textarea class="phe-chat-textarea" rows="1" maxlength="2000" placeholder="Viết tin nhắn…" aria-label="Nội dung tin nhắn"></textarea>
+        <button type="submit" class="phe-chat-send-btn" aria-label="Gửi tin nhắn" title="Gửi">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m22 2-7 20-4-9-9-4Z" />
+            <path d="M22 2 11 13" />
+          </svg>
+        </button>
+      </form>
+
+      <!-- Guest Login Prompt -->
+      <div class="phe-chat-guest-prompt" style="display: none;">
+        <p>Đăng nhập để cùng trò chuyện với cộng đồng.</p>
+        <a href="/dang-nhap/" class="phe-chat-guest-login">
+          <span>Đăng nhập</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" x2="3" y1="12" y2="12" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Error / Notice Status -->
+      <p class="phe-chat-status" role="status" aria-live="polite"></p>
+    </footer>
+  </section>
+</div>

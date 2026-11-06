@@ -38,13 +38,28 @@ export function isAllowedOrigin(originHeader: string | null | undefined, env: En
   return false;
 }
 
+export function extractOrigin(request: Request): string | null {
+  const origin = request.headers.get('origin');
+  if (origin) return origin;
+  const referer = request.headers.get('referer');
+  if (referer) {
+    try {
+      const u = new URL(referer);
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 export async function sha256(value:string):Promise<string>{
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(buf),x=>x.toString(16).padStart(2,'0')).join('');
 }
 export async function authenticate(request:Request,env:Env,csrf=false):Promise<Identity|null>{
   let jar:Map<string,string>;try{jar=cookies(request.headers.get('cookie')||'')}catch{return null}
   const token=jar.get('__Host-phe_session');if(!token||token.length>128)return null;
-  if(csrf && !isAllowedOrigin(request.headers.get('origin'), env)) return null;
+  if(csrf && !isAllowedOrigin(extractOrigin(request), env)) return null;
   const hash=await sha256(token);const sql=neon(env.DATABASE_URL);
   const rows=await sql.query(`SELECT u.id,u.username,encode(s.csrf_token_hash,'hex') csrf_hash FROM user_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=decode($1,'hex') AND s.revoked_at IS NULL AND s.expires_at>now()`,[hash]);
   if(rows.length!==1)return null;
