@@ -20,8 +20,6 @@ def get_movies_by_category(category_key: str):
         return [m for m in movies if m.get('status') == 'Phim lẻ']
     if category_key == 'phim-ngan':
         return []
-    if category_key == 'hoat-hinh':
-        return [m for m in movies if m.get('genre') == 'Hoạt hình']
     return []
 
 def get_genre_catalog():
@@ -57,14 +55,6 @@ CATEGORY_META = {
         'description': 'Khám phá những thước phim ngắn ấn tượng và giàu cảm xúc tại PHE PHIM AI. Danh mục đang được cập nhật thêm nội dung mới.',
         'canonical': 'https://phephim.vercel.app/phim-ngan/',
         'noindex': True,
-    },
-    'hoat-hinh': {
-        'title': 'Phim Hoạt Hình Tuyển Chọn – PHE PHIM AI',
-        'h1': 'Phim Hoạt Hình',
-        'eyebrow': 'KHÁM PHÁ ĐIỆN ẢNH',
-        'description': 'Thế giới phim hoạt hình anime, 3D đặc sắc và giàu cảm xúc dành cho mọi lứa tuổi trên PHE PHIM AI.',
-        'canonical': 'https://phephim.vercel.app/hoat-hinh/',
-        'noindex': False,
     },
     'the-loai': {
         'title': 'Thể Loại Phim Đa Dạng – PHE PHIM AI',

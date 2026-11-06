@@ -43,7 +43,7 @@ def test_category_css_rules():
     assert 'justify-content: space-between' in content
 
 def test_category_pages_render_unified_cards():
-    for cat in ['phim-bo', 'phim-le', 'hoat-hinh', 'the-loai']:
+    for cat in ['phim-bo', 'phim-le', 'the-loai']:
         res = client.get(f'/{cat}/')
         assert res.status_code == 200
         assert 'class="film-poster"' in res.text
@@ -52,6 +52,8 @@ def test_category_pages_render_unified_cards():
         assert 'class="film-meta"' in res.text
         assert 'tác phẩm' in res.text
         assert '/static/css/category.css' in res.text
+    # /hoat-hinh/ is removed and returns 404
+    assert client.get('/hoat-hinh/').status_code == 404
 
 def test_landscape_movie_card():
     # Phim lẻ has 'VỢ NGOẠI TÌNH VỚI SẾP'

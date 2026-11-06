@@ -3,7 +3,6 @@
   <url><loc>https://phephim.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
   <url><loc>https://phephim.vercel.app/phim-bo/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://phephim.vercel.app/phim-le/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://phephim.vercel.app/hoat-hinh/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://phephim.vercel.app/the-loai/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://phephim.vercel.app/tim-kiem/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://phephim.vercel.app/dieu-khoan/</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>

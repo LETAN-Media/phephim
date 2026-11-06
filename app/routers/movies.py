@@ -53,12 +53,6 @@ def phim_le(request: Request):
 def phim_ngan(request: Request):
     return render_category(request, 'phim-ngan')
 
-@router.get('/hoat-hinh/')
-@router.get('/hoat-hinh')
-@router.get('/hoat-hinh/index.html')
-def hoat_hinh(request: Request):
-    return render_category(request, 'hoat-hinh')
-
 @router.get('/the-loai/')
 @router.get('/the-loai')
 @router.get('/the-loai/index.html')

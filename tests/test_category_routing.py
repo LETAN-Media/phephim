@@ -7,7 +7,7 @@ from app.main import app
 
 client = TestClient(app)
 
-CATEGORIES = ['phim-bo', 'phim-le', 'phim-ngan', 'hoat-hinh', 'the-loai']
+CATEGORIES = ['phim-bo', 'phim-le', 'phim-ngan', 'the-loai']
 
 def test_category_routes_status_200():
     for cat in CATEGORIES:
@@ -34,7 +34,7 @@ def test_category_robots_directive():
     assert 'Phim ngắn sẽ sớm được cập nhật.' in res_ngan.text
 
     # Populated categories must have index, follow
-    for cat in ['phim-bo', 'phim-le', 'hoat-hinh', 'the-loai']:
+    for cat in ['phim-bo', 'phim-le', 'the-loai']:
         res = client.get(f'/{cat}/')
         assert '<meta name="robots" content="index, follow">' in res.text
 
@@ -52,9 +52,9 @@ def test_category_ssr_html_and_movie_links():
     assert '/phim/interstellar/' in res_le.text
     assert '/phim/parasite/' in res_le.text
 
+    # /hoat-hinh/ removed and returns 404
     res_hoat_hinh = client.get('/hoat-hinh/')
-    assert '/phim/spirited-away/' in res_hoat_hinh.text
-    assert 'Spirited Away' in res_hoat_hinh.text
+    assert res_hoat_hinh.status_code == 404
 
     res_the_loai = client.get('/the-loai/')
     assert 'Khoa học viễn tưởng' in res_the_loai.text
@@ -84,8 +84,8 @@ def test_sitemap_and_robots():
     assert '<loc>https://phephim.vercel.app/</loc>' in res_sitemap.text
     assert '<loc>https://phephim.vercel.app/phim-bo/</loc>' in res_sitemap.text
     assert '<loc>https://phephim.vercel.app/phim-le/</loc>' in res_sitemap.text
-    assert '<loc>https://phephim.vercel.app/hoat-hinh/</loc>' in res_sitemap.text
     assert '<loc>https://phephim.vercel.app/the-loai/</loc>' in res_sitemap.text
+    assert '<loc>https://phephim.vercel.app/hoat-hinh/</loc>' not in res_sitemap.text
     assert '<loc>https://phephim.vercel.app/phim/dune-part-two/</loc>' in res_sitemap.text
     # phim-ngan has noindex, so it must not be in sitemap
     assert '<loc>https://phephim.vercel.app/phim-ngan/</loc>' not in res_sitemap.text
