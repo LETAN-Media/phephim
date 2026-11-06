@@ -26,7 +26,7 @@ def register(data: Register, request: Request):
             uid = db.execute(text('INSERT INTO users(username,email,password_hash) VALUES (:username,:email,:password) RETURNING id'), {'username':username,'email':email,'password':hasher.hash(data.password)}).scalar_one()
     except IntegrityError:
         bad('Email hoặc tên người dùng đã được sử dụng.', 409)
-    delivered = issue_email_token(uid, email, 'verify') if os.getenv('SMTP_HOST') and os.getenv('SMTP_FROM') else False
+    delivered = issue_email_token(uid, email, 'verify', request=request) if os.getenv('SMTP_HOST') and os.getenv('SMTP_FROM') else False
     return {'message':'Tạo tài khoản thành công.', 'verification_email_sent':delivered}
 
 def login(data: Login, request: Request, response: Response):
@@ -76,7 +76,7 @@ def forgot(data: EmailInput, request: Request):
     with engine.connect() as db:
         user = db.execute(text('SELECT id,email FROM users WHERE lower(email)=:email'), {'email':email}).mappings().first()
     if user and os.getenv('SMTP_HOST') and os.getenv('SMTP_FROM'):
-        issue_email_token(user['id'], user['email'], 'reset')
+        issue_email_token(user['id'], user['email'], 'reset', request=request)
     return {'message':'Nếu email hợp lệ, hướng dẫn sẽ được gửi tới hộp thư của bạn.'}
 
 def reset(data: Reset, request: Request):
