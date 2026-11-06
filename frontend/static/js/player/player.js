@@ -45,7 +45,7 @@ const note = (message, fatal = false, failedSource = null) => {
 const manager = sourceManager(video, iframe, {
   onMessage: note,
   onCredit: text => {
-    credit.textContent = text;
+    credit.textContent = slug === 'big-buck-bunny-demo' ? text : '';
   },
   onAttempt: () => {
     empty.hidden = true;
