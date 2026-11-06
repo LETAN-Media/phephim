@@ -109,11 +109,11 @@ def normalize_youtube(url: str) -> dict | None:
     start_raw = query.get('start', [query.get('t', [''])[0]])[0]
     start_seconds = parse_time_param(start_raw)
 
-    query_params = {}
+    query_params = {'enablejsapi': '1'}
     if start_seconds and start_seconds > 0:
         query_params['start'] = str(start_seconds)
 
-    embed_query = ('?' + urlencode(query_params)) if query_params else ''
+    embed_query = '?' + urlencode(query_params)
     embed_url = f'https://www.youtube.com/embed/{video_id}{embed_query}'
     external_url = f'https://www.youtube.com/watch?v={video_id}'
 

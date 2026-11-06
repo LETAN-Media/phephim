@@ -18,23 +18,25 @@ def test_youtube_normalization():
     res = normalize_source_url('https://www.youtube.com/watch?v=sfDK-Znq-sE')
     assert res['platform'] == 'youtube'
     assert res['media_type'] == 'iframe'
-    assert res['embed_url'] == 'https://www.youtube.com/embed/sfDK-Znq-sE'
+    assert 'https://www.youtube.com/embed/sfDK-Znq-sE' in res['embed_url']
+    assert 'enablejsapi=1' in res['embed_url']
     assert res['external_url'] == 'https://www.youtube.com/watch?v=sfDK-Znq-sE'
 
     # youtu.be short link with timestamp
     res2 = normalize_source_url('https://youtu.be/sfDK-Znq-sE?t=1m30s')
     assert res2['platform'] == 'youtube'
-    assert res2['embed_url'] == 'https://www.youtube.com/embed/sfDK-Znq-sE?start=90'
+    assert 'https://www.youtube.com/embed/sfDK-Znq-sE' in res2['embed_url']
+    assert 'start=90' in res2['embed_url']
 
     # YouTube shorts
     res3 = normalize_source_url('https://www.youtube.com/shorts/sfDK-Znq-sE')
     assert res3['platform'] == 'youtube'
-    assert res3['embed_url'] == 'https://www.youtube.com/embed/sfDK-Znq-sE'
+    assert 'https://www.youtube.com/embed/sfDK-Znq-sE' in res3['embed_url']
 
     # Existing embed URL
     res4 = normalize_source_url('https://www.youtube.com/embed/sfDK-Znq-sE')
     assert res4['platform'] == 'youtube'
-    assert res4['embed_url'] == 'https://www.youtube.com/embed/sfDK-Znq-sE'
+    assert 'https://www.youtube.com/embed/sfDK-Znq-sE' in res4['embed_url']
 
 
 def test_facebook_normalization():
@@ -165,7 +167,7 @@ def test_admin_source_crud_lifecycle(monkeypatch):
     source_id = created['id']
     assert created['platform'] == 'youtube'
     assert created['media_type'] == 'iframe'
-    assert created['url'] == 'https://www.youtube.com/embed/sfDK-Znq-sE'
+    assert 'https://www.youtube.com/embed/sfDK-Znq-sE' in created['url']
     assert created['label'] == 'Nguồn 1 (YouTube)'
 
     # 2. Create Facebook source

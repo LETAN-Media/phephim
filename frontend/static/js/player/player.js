@@ -16,14 +16,10 @@ const retry = document.querySelector('#retry-source');
 const demoLink = document.querySelector('#demo-link');
 const externalLink = document.querySelector('#external-link');
 const externalLinkText = document.querySelector('#external-link-text');
-const sourcePanel = document.querySelector('#source-panel');
-const sourceList = document.querySelector('#source-list');
-const sourceInfo = document.querySelector('#source-info');
 const demoBanner = document.querySelector('#demo-banner');
 
 const movieUrl = `/api/movies/${encodeURIComponent(slug)}`;
 let tracker = null, selector = null, episode = null, requestVersion = 0;
-let currentSources = [];
 
 const note = (message, fatal = false, failedSource = null) => {
   status.textContent = message;
@@ -42,64 +38,20 @@ const note = (message, fatal = false, failedSource = null) => {
     }
   } else {
     externalLink.hidden = true;
-    notice.textContent = message || 'Sẵn sàng phát.';
+    notice.textContent = message || '';
   }
 };
-
-function renderSourcePanel(sources, activeIndex) {
-  currentSources = sources;
-  if (sources.length > 1) {
-    sourcePanel.hidden = false;
-    sourceInfo.textContent = `${sources.length} nguồn khả dụng`;
-    sourceList.replaceChildren();
-    sources.forEach((s, idx) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'source-button';
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', idx === activeIndex ? 'true' : 'false');
-
-      const name = document.createElement('span');
-      name.className = 'source-name';
-      name.textContent = s.label || `Nguồn ${idx + 1}`;
-      btn.append(name);
-
-      if (s.platform && s.platform !== 'direct') {
-        const tag = document.createElement('span');
-        tag.className = 'source-tag';
-        tag.textContent = s.platform === 'youtube' ? 'YouTube' : (s.platform === 'facebook' ? 'Facebook' : s.platform.toUpperCase());
-        btn.append(tag);
-      }
-
-      btn.addEventListener('click', () => {
-        manager.switchSource(idx);
-      });
-      sourceList.append(btn);
-    });
-  } else {
-    sourcePanel.hidden = true;
-    sourceList.replaceChildren();
-  }
-}
 
 const manager = sourceManager(video, iframe, {
   onMessage: note,
   onCredit: text => {
     credit.textContent = text;
   },
-  onAttempt: (source, index) => {
+  onAttempt: () => {
     empty.hidden = true;
     retry.hidden = true;
     demoLink.hidden = true;
     externalLink.hidden = true;
-    sourceList.querySelectorAll('.source-button').forEach((btn, idx) => {
-      btn.setAttribute('aria-selected', idx === index ? 'true' : 'false');
-    });
-  },
-  onSourceChange: (index, source) => {
-    sourceList.querySelectorAll('.source-button').forEach((btn, idx) => {
-      btn.setAttribute('aria-selected', idx === index ? 'true' : 'false');
-    });
   }
 });
 
@@ -179,17 +131,12 @@ async function selectEpisode(value, {updateUrl = true} = {}) {
     if (!playback.sources.length) {
       emptyMessage.textContent = 'Nguồn phim đang được cập nhật';
       demoLink.hidden = slug === 'big-buck-bunny-demo';
-      sourcePanel.hidden = true;
       return;
     }
 
-    // Only show demo banner if this is specifically the demo clip AND no real source is active
-    const hasRealSource = playback.sources.some(s => s.platform === 'youtube' || s.platform === 'facebook' || !s.url.includes('demo'));
-    if (hasRealSource || slug !== 'big-buck-bunny-demo') {
+    if (slug !== 'big-buck-bunny-demo') {
       demoBanner.hidden = true;
     }
-
-    renderSourcePanel(playback.sources, 0);
 
     tracker = progressTracker(video, slug, value, text => {
       notice.textContent = text;
@@ -209,7 +156,6 @@ async function selectEpisode(value, {updateUrl = true} = {}) {
   } catch (error) {
     if (version === requestVersion) {
       emptyMessage.textContent = error.message;
-      sourcePanel.hidden = true;
     }
   }
 }

@@ -52,8 +52,15 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
   function errorText(error) {
     if (error?.code === 2) return 'Lỗi mạng khi tải video. Kiểm tra kết nối hoặc thử lại.';
     if (error?.code === 3) return 'Không giải mã được video. Nguồn có thể dùng codec không tương thích.';
-    if (error?.code === 4) return 'Nguồn không tồn tại hoặc định dạng/codec không được hỗ trợ. Kiểm tra URL, MIME và codec.';
-    return 'Không tải được nguồn video. Kiểm tra kết nối hoặc thử lại.';
+    if (error?.code === 4) return 'Nguồn không tồn tại hoặc định dạng video không được hỗ trợ.';
+    return 'Không thể phát video từ nguồn này. Vui lòng thử lại.';
+  }
+
+  function ytErrorText(code) {
+    if (code === 101 || code === 150) return 'Video không cho phép nhúng trên trang ngoài.';
+    if (code === 100) return 'Video không tồn tại hoặc đã bị xóa trên nền tảng gốc.';
+    if (code === 153) return 'Lỗi cấu hình trình phát từ nền tảng video (Referrer Policy).';
+    return 'Nguồn phát gặp lỗi khi khởi tạo.';
   }
 
   function watchdog(current) {
@@ -61,27 +68,48 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
     timeout = setTimeout(() => failure(current, 'Video tải quá lâu. Kiểm tra kết nối hoặc thử lại.'), 20000);
   }
 
-  function failure(current, message) {
+  function failure(current, message, errorCode = null) {
     if (current !== generation) return;
     clearTimer();
     failures.add(index);
     const next = sources.findIndex((_, i) => !failures.has(i));
     if (next >= 0) {
       restore = Number.isFinite(video.currentTime) ? video.currentTime : 0;
-      onMessage('Nguồn gặp lỗi, đang thử nguồn dự phòng…');
+      onMessage('Đang chuyển sang nguồn dự phòng…');
       attach(next, {resume: true});
       return;
     }
     ++generation;
     stopActive();
-    onMessage(message || errorText(video.error), true, sources[index]);
+    const finalMsg = errorCode ? ytErrorText(errorCode) : (message || errorText(video.error));
+    onMessage(finalMsg, true, sources[index]);
   }
+
+  function onWindowMessage(event) {
+    if (!event.origin.includes('youtube.com') && !event.origin.includes('youtube-nocookie.com')) return;
+    let data = event.data;
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch {
+        return;
+      }
+    }
+    if (!data) return;
+
+    if (data.event === 'onError' || (data.info && typeof data.info.errorCode === 'number')) {
+      const code = data.info?.errorCode || data.info;
+      failure(generation, ytErrorText(code), code);
+    }
+  }
+
+  window.addEventListener('message', onWindowMessage);
 
   function playFromGesture() {
     if (video.hidden) return;
     const current = generation;
     userStarted = true;
-    onMessage('Đang tải video…');
+    onMessage('');
     watchdog(current);
     try {
       const promise = video.play();
@@ -91,7 +119,7 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
           clearTimer();
           playButton.hidden = false;
           if (error.name === 'NotSupportedError') {
-            failure(current, 'Định dạng hoặc codec nguồn không được trình duyệt hỗ trợ.');
+            failure(current, 'Định dạng video không được trình duyệt hỗ trợ.');
           } else {
             onMessage('Không thể bắt đầu phát. Nhấn Phát để thử lại.');
           }
@@ -127,7 +155,7 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
 
     const options = {
       onLevels: () => {},
-      onFatal: message => failure(current, message || 'Không tải được luồng phát. Kiểm tra kết nối hoặc thử lại.')
+      onFatal: msg => failure(current, msg || 'Không tải được luồng phát. Kiểm tra kết nối hoặc thử lại.')
     };
 
     try {
@@ -223,6 +251,9 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
       failures.delete(targetIndex);
       attach(targetIndex, {resume: userStarted});
     },
+    getCurrentSource() {
+      return sources[index] || null;
+    },
     getIndex() {
       return index;
     },
@@ -235,6 +266,7 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
     },
     destroy() {
       generation++;
+      window.removeEventListener('message', onWindowMessage);
       stopActive();
     }
   };

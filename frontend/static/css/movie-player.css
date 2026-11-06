@@ -18,18 +18,8 @@
 .episode-panel .episode-list button:disabled:hover{border-color:#ffffff24;color:#dce8eb}
 .episode-panel .episode-list button[aria-current=true]:disabled:hover{border-color:#4fe3e8;color:#031013}
 
-.watch-sources-panel{margin-top:20px;padding:14px 16px;background:#0b131cd9;border:1px solid #ffffff16;border-radius:2px;scroll-margin-top:84px}
-.watch-sources-panel[hidden]{display:none}
-.watch-sources-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.watch-sources-title{color:#4fe3e8;font-size:.68rem;font-weight:700;letter-spacing:.14em}
-.watch-sources-info{color:#8ea2ac;font-size:.75rem}
-.watch-sources-list{display:flex;flex-wrap:wrap;gap:10px}
-.source-button{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 16px;border:1px solid #ffffff26;background:#101a24;color:#dce8eb;font-size:.8rem;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
-.source-button:hover{border-color:#4fe3e888;color:#4fe3e8}
-.source-button[aria-selected="true"]{border-color:#4fe3e8;background:#4fe3e81a;color:#8bf5f2;box-shadow:0 0 16px #4fe3e820}
-.source-button .source-tag{padding:2px 6px;background:#ffffff10;border-radius:2px;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:#94a6b2}
-.source-button[aria-selected="true"] .source-tag{background:#4fe3e830;color:#c0faf7}
 .external-link{display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:0 16px;background:#10242e;border:1px solid #4fe3e888;color:#c8f7f5;text-decoration:none;font-size:.8rem;font-weight:500;transition:background .2s,border-color .2s}
 .external-link:hover{background:#163745;border-color:#4fe3e8}
 .external-link[hidden]{display:none}
+
 

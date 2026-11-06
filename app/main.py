@@ -9,7 +9,10 @@ async def security_headers(request: Request, call_next):
     if request.url.path.startswith(('/api/', '/xem-phim/')):
         response.headers['Cache-Control'] = 'no-store'
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['Referrer-Policy'] = 'no-referrer'
+    if request.url.path.startswith('/api/'):
+        response.headers['Referrer-Policy'] = 'no-referrer'
+    else:
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return response
 
 app.include_router(auth.router)
