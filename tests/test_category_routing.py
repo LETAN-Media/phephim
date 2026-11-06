@@ -94,3 +94,16 @@ def test_nonexistent_route_returns_404():
     res = client.get('/danh-muc-khong-ton-tai/')
     assert res.status_code == 404
     assert 'Không tìm thấy trang' in res.text or '404' in res.text
+
+def test_homepage_catalog_excludes_phim_ngan_and_hoat_hinh():
+    from pathlib import Path
+    from app.core.config import ROOT
+    catalog_js = (ROOT / 'frontend/static/js/movies/catalog.js').read_text(encoding='utf-8')
+    assert "'phim-ngan'" not in catalog_js
+    assert "'hoat-hinh'" not in catalog_js
+    assert "'moi-cap-nhat'" in catalog_js
+    assert "'thinh-hanh'" in catalog_js
+    assert "'phim-bo'" in catalog_js
+    assert "'phim-le'" in catalog_js
+    assert "'de-xuat'" in catalog_js
+
