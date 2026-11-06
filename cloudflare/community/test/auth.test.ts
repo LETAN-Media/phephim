@@ -18,5 +18,14 @@ describe('shared session security',()=>{
   expect(await authenticate(request(cookie,'https://phe.example','wrong'),env,true)).toBeNull();
   expect(await authenticate(request(cookie+'; __Host-phe_session=other'),env,true)).toBeNull();
  });
+ it('accepts custom domain and default allowed origins',async()=>{
+  const cookie='__Host-phe_session=session-test; __Host-phe_csrf=csrf-test';
+  const userWww=await authenticate(request(cookie,'https://www.phephim.ai'),env,true);
+  expect(userWww?.id).toBe(42);
+  const userApex=await authenticate(request(cookie,'https://phephim.ai'),env,true);
+  expect(userApex?.id).toBe(42);
+  const userVercel=await authenticate(request(cookie,'https://phephim.vercel.app'),env,true);
+  expect(userVercel?.id).toBe(42);
+ });
  it('rejects revoked or expired sessions',async()=>{fixture.rows=[];expect(await authenticate(request('__Host-phe_session=session-test'),env,false)).toBeNull()});
 });

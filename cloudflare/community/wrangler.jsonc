@@ -61,6 +61,9 @@
     "COMMUNITY_MAX_MESSAGES_60S": "20",
     "COMMUNITY_DUPLICATE_WINDOW_SECONDS": "60",
     "COMMUNITY_MODERATION_MAX_WARNINGS": "3",
-    "COMMUNITY_MODERATION_BAN_HOURS": "24"
+    "COMMUNITY_MODERATION_BAN_HOURS": "24",
+    "APP_ORIGIN": "https://www.phephim.ai",
+    "CATALOG_ORIGIN": "https://www.phephim.ai",
+    "ALLOWED_ORIGINS": "https://www.phephim.ai,https://phephim.ai,https://phephim.vercel.app"
   }
 }

@@ -1,6 +1,6 @@
 import {Hono} from 'hono';
 import {neon} from '@neondatabase/serverless';
-import {authenticate} from './auth';
+import {authenticate, isAllowedOrigin} from './auth';
 import {readBodyLimited} from './body';
 import {supportAccess,supportStaff} from './support-access';
 import type {Env,Identity} from './env';
@@ -43,7 +43,7 @@ support.patch('/api/support/conversations/:id/status',async c=>{
  if(!rows.length)return c.json({detail:'Không tìm thấy hội thoại.'},404);return c.json({ok:true});
 });
 support.get('/ws/support/:id',async c=>{
- const conversation=id(c.req.param('id'));if(!conversation||c.req.header('Origin')!==c.env.APP_ORIGIN)return c.text('Forbidden',403);
+ const conversation=id(c.req.param('id'));if(!conversation||!isAllowedOrigin(c.req.header('Origin'), c.env))return c.text('Forbidden',403);
  const user=await authenticate(c.req.raw,c.env);if(!user||!await supportAccess(c.env,user,conversation))return c.text('Not found',404);
  const stub=c.env.SUPPORT_ROOMS.get(c.env.SUPPORT_ROOMS.idFromName(`support:${conversation}`));return stub.fetch(internal(c.req.raw,user,conversation,'/connect'));
 });

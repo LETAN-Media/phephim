@@ -2,6 +2,7 @@ export interface Env {
   DATABASE_URL: string;
   STAGING_DIAGNOSTICS?: string;
   APP_ORIGIN: string;
+  ALLOWED_ORIGINS?: string;
   COMMUNITY_ANTI_SPAM_ENABLED?: string;
   COMMUNITY_ANTI_ADS_ENABLED?: string;
   COMMUNITY_BLOCK_EXTERNAL_SOLICITATION?: string;
