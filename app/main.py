@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from app.routers import auth, users, movies, pages, playback
+from app.routers import auth, users, movies, pages, playback, admin_sources
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -15,6 +15,7 @@ async def security_headers(request: Request, call_next):
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(playback.router)
+app.include_router(admin_sources.router)
 app.include_router(movies.router)
 app.include_router(pages.router)
 
