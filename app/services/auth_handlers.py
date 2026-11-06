@@ -30,18 +30,20 @@ def register(data: Register, request: Request):
     return {'message':'Tạo tài khoản thành công.', 'verification_email_sent':delivered}
 
 def login(data: Login, request: Request, response: Response):
-    check_origin(request); limit(request, 'login', 15, 15)
+    check_origin(request)
     identifier = data.identifier.strip().lower()
     with engine.connect() as db:
+        limit(request, 'login', 15, 15, db=db)
+        db.commit()
         row = db.execute(text('SELECT id,username,email,email_verified_at,password_hash FROM users WHERE lower(email)=:identifier OR lower(username)=:identifier LIMIT 1'), {'identifier':identifier}).mappings().first()
-    if not row: bad('Thông tin đăng nhập không chính xác.', 401)
-    try: verified = hasher.verify(row['password_hash'], data.password)
-    except (VerifyMismatchError, VerificationError, InvalidHashError): verified = False
-    if not verified: bad('Thông tin đăng nhập không chính xác.', 401)
-    token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-    duration = timedelta(days=30 if data.remember else 1)
-    with engine.begin() as db:
+        if not row: bad('Thông tin đăng nhập không chính xác.', 401)
+        try: verified = hasher.verify(row['password_hash'], data.password)
+        except (VerifyMismatchError, VerificationError, InvalidHashError): verified = False
+        if not verified: bad('Thông tin đăng nhập không chính xác.', 401)
+        token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
+        duration = timedelta(days=30 if data.remember else 1)
         db.execute(text('INSERT INTO user_sessions(user_id,token_hash,csrf_token_hash,expires_at) VALUES (:uid,:token,:csrf,:expiry)'), {'uid':row['id'],'token':digest(token),'csrf':digest(csrf),'expiry':now()+duration})
+        db.commit()
     opts = {'secure':True,'samesite':'lax','path':'/'}
     if data.remember: opts['max_age'] = int(duration.total_seconds())
     response.set_cookie(COOKIE, token, httponly=True, **opts)

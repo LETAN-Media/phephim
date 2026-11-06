@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /xem-phim/
+Disallow: /ho-so/
+Disallow: /doi-mat-khau/
+Disallow: /quen-mat-khau/
+Disallow: /dat-lai-mat-khau/
+Disallow: /xac-minh-email/
+
+Sitemap: https://phephim.vercel.app/sitemap.xml

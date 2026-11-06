@@ -8,4 +8,5 @@ const movies = [
  ['breaking-bad','Breaking Bad',2008,'Mỹ','Chính kịch',8.9,'5 mùa','ggFHVNu6YYI5L9pCfOacjizRGt.jpg','tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg'],
  ['the-last-of-us','The Last of Us',2023,'Mỹ','Phiêu lưu',8.6,'Phim bộ','uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg','9ijMGlJKqcslswWUzTEwScm82Gs.jpg']
 ].map(([slug,title,year,country,genre,rating,status,poster,backdrop])=>({slug,title,year,country,genre,rating,status,poster:`https://image.tmdb.org/t/p/w500/${poster}`,backdrop:`https://image.tmdb.org/t/p/w1280/${backdrop}`}));
+movies.unshift({slug:'vo-ngoai-tinh-voi-sep',title:'VỢ NGOẠI TÌNH VỚI SẾP',year:null,country:'',genre:'',rating:null,status:'Phim lẻ',poster:'https://i.ytimg.com/vi/sfDK-Znq-sE/hqdefault.jpg',backdrop:'https://i.ytimg.com/vi/sfDK-Znq-sE/hqdefault.jpg'});
 export const movieApi = { async list(){return movies}, async get(slug){return movies.find(m=>m.slug===slug)} };

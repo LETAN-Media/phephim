@@ -17,7 +17,7 @@ def test_home_retains_v1():
     assert 'header-v2.css' not in response.text
 
 def test_inner_routes_and_404_use_v2():
-    for path in ('/tim-kiem/', '/phim/interstellar/', '/dang-nhap/', '/dang-ky/', '/ho-so/', '/doi-mat-khau/', '/quen-mat-khau/', '/dat-lai-mat-khau/', '/xac-minh-email/', '/dieu-khoan/', '/missing-page/'):
+    for path in ('/tim-kiem/', '/phim/interstellar/', '/dang-nhap/', '/dang-ky/', '/ho-so/', '/doi-mat-khau/', '/quen-mat-khau/', '/dat-lai-mat-khau/', '/xac-minh-email/', '/dieu-khoan/', '/chinh-sach-rieng-tu/', '/dmca/', '/canh-bao-do-tuoi/', '/lien-he/', '/gioi-thieu/', '/missing-page/'):
         response = client.get(path)
         assert response.status_code == (404 if path == '/missing-page/' else 200)
         assert response.text.count('data-header-v2') == 1

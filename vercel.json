@@ -1,4 +1,5 @@
 {
+  "regions": ["sin1"],
   "rewrites": [
     {"source": "/cong-dong", "destination": "https://phephim-community.hung2nao.workers.dev/cong-dong/"},
     {"source": "/cong-dong/", "destination": "https://phephim-community.hung2nao.workers.dev/cong-dong/"},

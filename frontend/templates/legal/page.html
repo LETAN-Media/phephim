@@ -1,0 +1,63 @@
+{% extends 'layouts/inner-layout.html' %}
+{% block head %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
+<link rel="canonical" href="{{ canonical }}">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="PHE PHIM AI">
+<meta property="og:image" content="https://phephim.vercel.app/assets/logo-mark.png">
+<meta name="theme-color" content="#04060B">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/movies.css">
+<link rel="stylesheet" href="/auth.css">
+<style>
+body{margin:0;background:#04060b;color:#eef1f5;font:17px/1.6 Archivo,system-ui,sans-serif}
+*{box-sizing:border-box}
+a{color:#4fe3e8;text-decoration:none}
+a:hover{text-decoration:underline}
+:root{--g2:clamp(20px,4.6vw,64px)}
+.legal-page{min-height:100vh;padding:140px var(--g2) 90px;max-width:880px;margin:0 auto}
+.legal-header{margin-bottom:36px;border-bottom:1px solid #ffffff15;padding-bottom:24px}
+.legal-header .eyebrow{font-size:.72rem;letter-spacing:.22em;color:#4fe3e8;font-weight:700;display:inline-block;text-transform:uppercase}
+.legal-header h1{font-size:clamp(2.2rem,4.5vw,3.6rem);line-height:1.1;margin:12px 0 10px;letter-spacing:-.03em}
+.legal-header p{color:#a5b0bc;margin:0;font-size:1rem}
+.legal-body{color:#d3d8df}
+.legal-body h2{font-size:clamp(1.25rem,2.2vw,1.6rem);margin:36px 0 14px;color:#fff;letter-spacing:-.02em}
+.legal-body h3{font-size:1.1rem;margin:24px 0 10px;color:#eef1f5}
+.legal-body p{margin:0 0 16px;line-height:1.75;color:#bac5cf}
+.legal-body ul,.legal-body ol{margin:0 0 20px;padding-left:24px;color:#bac5cf}
+.legal-body li{margin-bottom:8px;line-height:1.7}
+.legal-highlight{background:rgba(79,227,232,.06);border-left:3px solid #4fe3e8;padding:16px 20px;border-radius:0 8px 8px 0;margin:24px 0}
+.legal-highlight p{margin:0;color:#eef1f5}
+.legal-footer{margin-top:48px;padding-top:24px;border-top:1px solid #ffffff15;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:.85rem;color:#8e9aa8}
+@media(max-width:800px){
+  .legal-page{padding:110px var(--g2) 60px}
+}
+</style>
+{% endblock %}
+{% block content %}
+<main class="legal-page" id="legal-content">
+  <header class="legal-header">
+    <span class="eyebrow">{{ eyebrow or 'THÔNG TIN PHÁP LÝ' }}</span>
+    <h1>{{ h1 }}</h1>
+    <p>Cập nhật lần cuối: {{ updated_at or 'Tháng 11/2026' }}</p>
+  </header>
+  <article class="legal-body">
+    {{ body|safe }}
+  </article>
+  <footer class="legal-footer">
+    <span>PHE PHIM AI — Nền tảng trải nghiệm điện ảnh</span>
+    <a href="/">← Quay lại Trang chủ</a>
+  </footer>
+</main>
+{% endblock %}

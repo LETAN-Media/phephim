@@ -27,18 +27,23 @@ def check_origin(request):
     if request.headers.get('origin') != ORIGIN:
         bad('Yêu cầu không hợp lệ.', 403)
 
-def limit(request, kind, maximum, minutes):
+def limit(request, kind, maximum, minutes, db=None):
     # Hash the address before storing it. Trust the direct peer unless a trusted
     # reverse proxy explicitly replaces request.client via Uvicorn configuration.
     peer = request.client.host if request.client else 'unknown'
     key = hashlib.sha256((kind + ':' + peer).encode()).hexdigest()
-    with engine.begin() as db:
-        count = db.execute(text('''INSERT INTO auth_rate_limits(bucket, attempts, expires_at)
+    sql = text('''INSERT INTO auth_rate_limits(bucket, attempts, expires_at)
         VALUES (:key, 1, now() + (:minutes * interval '1 minute'))
         ON CONFLICT(bucket) DO UPDATE SET
           attempts = CASE WHEN auth_rate_limits.expires_at <= now() THEN 1 ELSE auth_rate_limits.attempts + 1 END,
           expires_at = CASE WHEN auth_rate_limits.expires_at <= now() THEN now() + (:minutes * interval '1 minute') ELSE auth_rate_limits.expires_at END
-        RETURNING attempts'''), {'key':key, 'minutes':minutes}).scalar_one()
+        RETURNING attempts''')
+    params = {'key': key, 'minutes': minutes}
+    if db is not None:
+        count = db.execute(sql, params).scalar_one()
+    else:
+        with engine.begin() as conn:
+            count = conn.execute(sql, params).scalar_one()
     if count > maximum:
         bad('Quá nhiều yêu cầu. Vui lòng thử lại sau.', 429)
 
