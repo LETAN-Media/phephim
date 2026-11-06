@@ -1,4 +1,23 @@
 {% extends 'layouts/inner-layout.html' %}
+{% macro movie_card(movie) %}
+<article class="film-card">
+  <a href="/phim/{{ movie.slug }}/">
+    <div class="film-poster">
+      <span class="poster-ambient" style="background-image:url('{{ movie.poster }}');" aria-hidden="true"></span>
+      <img src="{{ movie.poster }}" alt="Poster {{ movie.title }}" loading="lazy" decoding="async">
+    </div>
+    <div class="film-info">
+      <h3>{{ movie.title }}</h3>
+      <p class="film-meta">
+        {%- set parts = [] -%}
+        {%- if movie.year %}{% set _ = parts.append(movie.year|string) %}{% endif -%}
+        {%- if movie.rating is not none %}{% set _ = parts.append('★ ' ~ movie.rating) %}{% endif -%}
+        {{ parts|join(' · ') or movie.status }}
+      </p>
+    </div>
+  </a>
+</article>
+{% endmacro %}
 {% block head %}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -27,74 +46,42 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/movies.css">
 <link rel="stylesheet" href="/auth.css">
-<style>
-body{margin:0;background:#04060b;color:#eef1f5;font:17px/1.55 Archivo,system-ui,sans-serif}
-*{box-sizing:border-box}
-a{color:inherit}
-img{max-width:100%}
-:root{--g2:clamp(20px,4.6vw,64px)}
-.category-page{min-height:100vh;padding:140px var(--g2) 80px;max-width:1440px;margin:0 auto}
-.category-header{margin-bottom:36px;border-bottom:1px solid #ffffff15;padding-bottom:24px}
-.category-header .eyebrow{font-size:.72rem;letter-spacing:.22em;color:#4fe3e8;font-weight:700;display:inline-block;text-transform:uppercase}
-.category-header h1{font-size:clamp(2.4rem,5vw,4.2rem);line-height:1.05;margin:12px 0 10px;letter-spacing:-.03em}
-.category-header p{color:#a5b0bc;max-width:64ch;margin:0;font-size:1.05rem;line-height:1.6}
-.category-meta-bar{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:.82rem;color:#8e9aa8}
-.genre-nav{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0 32px}
-.genre-pill{display:inline-block;padding:8px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:.82rem;text-decoration:none;transition:all .2s ease}
-.genre-pill:hover{background:rgba(79,227,232,.12);border-color:#4fe3e8;color:#4fe3e8}
-.genre-section{margin-bottom:56px}
-.genre-heading{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #ffffff15;padding-bottom:12px;margin-bottom:20px}
-.genre-heading h2{font-size:clamp(1.4rem,2.8vw,2rem);margin:0;letter-spacing:-.02em}
-.genre-heading span{font-size:.75rem;color:#8e9aa8}
-.empty-box{padding:56px 24px;border:1px dashed rgba(255,255,255,.15);border-radius:8px;text-align:center;color:#a5b0bc;margin-top:24px}
-.empty-box p{margin:0 0 16px;font-size:1.05rem}
-.empty-box .secondary{margin-top:8px}
-@media(max-width:800px){
-  .category-page{padding:110px var(--g2) 60px}
-  .genre-nav{gap:8px}
-  .genre-pill{font-size:.78rem;padding:6px 12px}
-}
-</style>
+<link rel="stylesheet" href="/static/css/category.css">
 {% endblock %}
 {% block content %}
 <main class="category-page" id="category-content">
   <header class="category-header">
-    <span class="eyebrow">{{ eyebrow }}</span>
-    <h1>{{ h1 }}</h1>
-    {% if description %}<p>{{ description }}</p>{% endif %}
-    {% if not is_genre_catalog and movies %}
-    <div class="category-meta-bar">
-      <span>01 — {{ '%02d' % movies|length }} tác phẩm</span>
+    <div class="category-header-top">
+      <span class="eyebrow">{{ eyebrow }}</span>
+      <span class="category-count">
+        {%- if total_count -%}
+          01 — {{ '%02d' % total_count }} tác phẩm
+        {%- elif movies -%}
+          01 — {{ '%02d' % movies|length }} tác phẩm
+        {%- else -%}
+          00 tác phẩm
+        {%- endif -%}
+      </span>
     </div>
-    {% endif %}
+    <h1>{{ h1 }}</h1>
+    {% if description %}<p class="category-desc">{{ description }}</p>{% endif %}
   </header>
 
   {% if is_genre_catalog %}
     <nav class="genre-nav" aria-label="Danh mục thể loại">
       {% for genre, items in genre_catalog.items() %}
-      <a class="genre-pill" href="#the-loai-{{ loop.index }}">{{ genre }} ({{ items|length }})</a>
+      <a class="genre-pill" href="#the-loai-{{ loop.index }}">{{ genre }} <small>({{ items|length }})</small></a>
       {% endfor %}
     </nav>
     {% for genre, items in genre_catalog.items() %}
     <section class="genre-section" id="the-loai-{{ loop.index }}">
       <div class="genre-heading">
         <h2>{{ genre }}</h2>
-        <span>01 — {{ '%02d' % items|length }} phim</span>
+        <span class="genre-count">01 — {{ '%02d' % items|length }} tác phẩm</span>
       </div>
       <div class="film-grid">
         {% for movie in items %}
-        <article class="film-card">
-          <a href="/phim/{{ movie.slug }}/">
-            <img src="{{ movie.poster }}" alt="Poster {{ movie.title }}" loading="lazy" decoding="async" width="240" height="360">
-            <h3>{{ movie.title }}</h3>
-            <p>
-              {%- set parts = [] -%}
-              {%- if movie.year %}{% set _ = parts.append(movie.year|string) %}{% endif -%}
-              {%- if movie.rating is not none %}{% set _ = parts.append('★ ' ~ movie.rating) %}{% endif -%}
-              {{ parts|join(' · ') or movie.status }}
-            </p>
-          </a>
-        </article>
+        {{ movie_card(movie) }}
         {% endfor %}
       </div>
     </section>
@@ -103,18 +90,7 @@ img{max-width:100%}
     {% if movies %}
     <div class="film-grid">
       {% for movie in movies %}
-      <article class="film-card">
-        <a href="/phim/{{ movie.slug }}/">
-          <img src="{{ movie.poster }}" alt="Poster {{ movie.title }}" loading="lazy" decoding="async" width="240" height="360">
-          <h3>{{ movie.title }}</h3>
-          <p>
-            {%- set parts = [] -%}
-            {%- if movie.year %}{% set _ = parts.append(movie.year|string) %}{% endif -%}
-            {%- if movie.rating is not none %}{% set _ = parts.append('★ ' ~ movie.rating) %}{% endif -%}
-            {{ parts|join(' · ') or movie.status }}
-          </p>
-        </a>
-      </article>
+      {{ movie_card(movie) }}
       {% endfor %}
     </div>
     {% else %}

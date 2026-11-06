@@ -128,6 +128,7 @@ ALIASES = {
     'app.js': 'js/movies/app.js', 'movie-api.js': 'js/movies/movie-api.js',
     'auth.js': 'js/auth/auth.js', 'auth-cinematic.js': 'js/auth/cinematic.js',
     'movies.css': 'css/movies.css', 'auth.css': 'css/auth.css',
+    'category.css': 'css/category.css',
     'auth-cinematic.css': 'css/auth-cinematic.css', 'hero_scrub.mp4': 'images/hero_scrub.mp4',
     'robots.txt': 'robots.txt', 'sitemap.xml': 'sitemap.xml',
 }

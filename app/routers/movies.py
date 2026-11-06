@@ -16,6 +16,7 @@ def render_category(request: Request, key: str):
     is_genre_catalog = (key == 'the-loai')
     genre_catalog = get_genre_catalog() if is_genre_catalog else None
     movies = [] if is_genre_catalog else get_movies_by_category(key)
+    total_count = sum(len(items) for items in genre_catalog.values()) if is_genre_catalog else len(movies)
     return templates.TemplateResponse(
         request=request,
         name='movies/category.html',
@@ -30,6 +31,7 @@ def render_category(request: Request, key: str):
             'movies': movies,
             'is_genre_catalog': is_genre_catalog,
             'genre_catalog': genre_catalog,
+            'total_count': total_count,
         }
     )
 

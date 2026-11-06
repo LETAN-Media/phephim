@@ -1,0 +1,478 @@
+/* ==========================================================================
+   PHE PHIM AI — Category Pages Stylesheet (/static/css/category.css)
+   Applies to: /phim-bo/, /phim-le/, /phim-ngan/, /hoat-hinh/, /the-loai/
+   ========================================================================== */
+
+html {
+  background: #04060b;
+  color: #eef1f5;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: #04060b;
+  color: #eef1f5;
+  font: 16px / 1.55 Archivo, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+* {
+  box-sizing: border-box;
+}
+a {
+  color: inherit;
+}
+img {
+  max-width: 100%;
+}
+
+:root {
+  --g2: clamp(16px, 4.2vw, 64px);
+  --cyan: #4fe3e8;
+  --cyan-glow: rgba(79, 227, 232, 0.18);
+  --bg-card: #0d1520;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: #eef1f5;
+  --text-muted: #8e9aa8;
+}
+
+/* Base Category Page Container */
+.category-page {
+  min-height: calc(100vh - 78px);
+  padding: 32px var(--g2) 70px;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .category-page {
+    padding: 20px var(--g2) 48px;
+  }
+}
+
+/* Category Header */
+.category-header {
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 18px;
+}
+@media (max-width: 768px) {
+  .category-header {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+}
+
+.category-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.category-header .eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+  font-weight: 700;
+  display: inline-block;
+  text-transform: uppercase;
+}
+@media (max-width: 768px) {
+  .category-header .eyebrow {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+  }
+}
+
+.category-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .category-count {
+    font-size: 0.7rem;
+  }
+}
+
+/* Category H1 Title */
+.category-header h1 {
+  font-size: clamp(34px, 3.6vw, 44px);
+  line-height: 1.15;
+  margin: 10px 0 8px;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+@media (max-width: 1024px) {
+  .category-header h1 {
+    font-size: clamp(30px, 3.5vw, 36px);
+    line-height: 1.15;
+  }
+}
+@media (max-width: 768px) {
+  .category-header h1 {
+    font-size: clamp(28px, 6.8vw, 32px);
+    line-height: 1.2;
+    margin: 8px 0 6px;
+  }
+}
+
+/* SEO Description */
+.category-desc {
+  color: #9aa8b5;
+  max-width: 68ch;
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+@media (max-width: 768px) {
+  .category-desc {
+    font-size: 0.82rem;
+    line-height: 1.48;
+    margin: 4px 0 0;
+    color: #8997a3;
+  }
+}
+
+/* ==========================================================================
+   Movie Grid (Standardized across all category pages)
+   ========================================================================== */
+.category-page .film-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 22px 18px;
+  align-items: start;
+}
+@media (max-width: 1200px) {
+  .category-page .film-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px 16px;
+  }
+}
+/* Tablet: 4 phim/hàng (768px - 1024px) */
+@media (max-width: 1024px) {
+  .category-page .film-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 14px;
+  }
+}
+/* Mobile: 3 phim/hàng, khoảng cách 8–10px (<= 767px) */
+@media (max-width: 767px) {
+  .category-page .film-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 10px;
+  }
+}
+@media (max-width: 480px) {
+  .category-page .film-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 8px;
+  }
+}
+@media (max-width: 340px) {
+  .category-page .film-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px 6px;
+  }
+}
+
+/* ==========================================================================
+   Movie Card Component
+   ========================================================================== */
+.category-page .film-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.category-page .film-card a {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-decoration: none;
+  min-width: 0;
+  color: inherit;
+  outline: none;
+}
+.category-page .film-card a:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Poster Frame (Strict 2:3 aspect ratio, no stretch, handles landscape nicely) */
+.category-page .film-poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.category-page .film-card a:hover .film-poster {
+  border-color: rgba(79, 227, 232, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 20px var(--cyan-glow);
+}
+
+/* Ambient Backdrop for landscape / non-2:3 posters */
+.category-page .poster-ambient {
+  position: absolute;
+  inset: -15px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(16px) brightness(0.35);
+  opacity: 0.85;
+  transform: scale(1.15);
+  pointer-events: none;
+}
+
+/* Poster image */
+.category-page .film-poster img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.category-page .film-card a:hover .film-poster img {
+  transform: scale(1.04);
+}
+
+/* Fallback if film-card img directly without .film-poster wrapper */
+.category-page .film-card > a > img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  background: var(--bg-card);
+  border-radius: 4px;
+  display: block;
+}
+
+/* Movie Info */
+.category-page .film-info {
+  display: flex;
+  flex-direction: column;
+  padding-top: 6px;
+  min-width: 0;
+}
+
+/* Movie Title: max 2 lines, compact */
+.category-page .film-card h3 {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  transition: color 0.2s ease;
+}
+.category-page .film-card a:hover h3 {
+  color: var(--cyan);
+}
+@media (max-width: 768px) {
+  .category-page .film-card h3 {
+    font-size: 0.74rem;
+    line-height: 1.25;
+  }
+}
+@media (max-width: 360px) {
+  .category-page .film-card h3 {
+    font-size: 0.7rem;
+  }
+}
+
+/* Movie Meta: Year & Rating directly below title */
+.category-page .film-meta {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  margin: 3px 0 0;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 768px) {
+  .category-page .film-meta {
+    font-size: 0.66rem;
+    margin-top: 2px;
+    color: #7b8895;
+  }
+}
+@media (max-width: 360px) {
+  .category-page .film-meta {
+    font-size: 0.62rem;
+  }
+}
+
+/* ==========================================================================
+   Genre Catalog (/the-loai/)
+   ========================================================================== */
+.category-page .genre-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0 32px;
+}
+@media (max-width: 768px) {
+  .category-page .genre-nav {
+    gap: 7px;
+    margin: 14px 0 22px;
+  }
+}
+.category-page .genre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #c5d3da;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.category-page .genre-pill small {
+  color: #798896;
+  font-size: 0.7rem;
+}
+.category-page .genre-pill:hover {
+  background: rgba(79, 227, 232, 0.12);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.category-page .genre-pill:hover small {
+  color: #bbf7f5;
+}
+@media (max-width: 768px) {
+  .category-page .genre-pill {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    gap: 4px;
+  }
+  .category-page .genre-pill small {
+    font-size: 0.64rem;
+  }
+}
+
+.category-page .genre-section {
+  margin-bottom: 44px;
+}
+@media (max-width: 768px) {
+  .category-page .genre-section {
+    margin-bottom: 30px;
+  }
+}
+
+/* Genre Heading: aligned straight horizontally */
+.category-page .genre-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 9px;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+@media (max-width: 768px) {
+  .category-page .genre-heading {
+    padding-bottom: 7px;
+    margin-bottom: 12px;
+  }
+}
+.category-page .genre-heading h2 {
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.category-page .genre-heading h2::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 15px;
+  background: var(--cyan);
+  border-radius: 2px;
+}
+.category-page .genre-heading .genre-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .category-page .genre-heading h2 {
+    font-size: 1.02rem;
+  }
+  .category-page .genre-heading h2::before {
+    height: 13px;
+    width: 2.5px;
+  }
+  .category-page .genre-heading .genre-count {
+    font-size: 0.68rem;
+  }
+}
+
+/* Empty box (for /phim-ngan/ until content arrives) */
+.category-page .empty-box {
+  padding: 56px 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+.category-page .empty-box p {
+  margin: 0 0 16px;
+  font-size: 0.98rem;
+}
+.category-page .empty-box .secondary {
+  display: inline-block;
+  padding: 10px 18px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+.category-page .empty-box .secondary:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-page .film-poster img,
+  .category-page .film-poster,
+  .category-page .genre-pill {
+    transition: none !important;
+  }
+}
