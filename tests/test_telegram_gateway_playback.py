@@ -30,16 +30,55 @@ def test_sign_telegram_gateway_url():
     assert STREAM_SIGNING_SECRET not in signed  # secret never leaks
 
 
-def test_sources_returns_dynamically_signed_url_for_test_04():
-    # test-04 is stored in Neon with stable unsigned URL
+def test_sources_returns_permanent_stream_url_for_test_04():
+    # Sources returns permanent clean URL for HTML5 player
     res = sources("test-04", "tap-1")
     assert len(res) >= 1
-    
+
     source = res[0]
     assert source["media_type"] == "mp4"
-    assert "p01--telegram-stream-gateway" in source["url"]
-    assert "exp=" in source["url"]
-    assert "sig=" in source["url"]
+    assert source["url"] == "/api/stream/test-04/tap-1.mp4"
+    assert source["platform"] == "direct"
+
+
+def test_permanent_stream_endpoint_requires_auth():
+    # Unauthenticated request must return 401
+    resp = client.get("/api/stream/test-04/tap-1.mp4", follow_redirects=False)
+    assert resp.status_code == 401
+
+
+def test_permanent_stream_endpoint_redirects_to_signed_gateway(monkeypatch):
+    # Authenticated request returns 307 Temporary Redirect to signed Gateway URL
+    from app.routers import playback
+    monkeypatch.setattr(playback, "require_user", lambda request: {"id": 1, "username": "tester"})
+
+    resp = client.get("/api/stream/test-04/tap-1.mp4", follow_redirects=False)
+    assert resp.status_code == 307
+    location = resp.headers.get("location")
+    assert location is not None
+    assert "p01--telegram-stream-gateway" in location
+    assert "exp=" in location
+    assert "sig=" in location
+    assert "no-store" in resp.headers.get("cache-control", "").lower()
+
+
+def test_permanent_stream_head_request_supported(monkeypatch):
+    from app.routers import playback
+    monkeypatch.setattr(playback, "require_user", lambda request: {"id": 1, "username": "tester"})
+
+    resp = client.head("/api/stream/phim/tap-1.mp4", follow_redirects=False)
+    assert resp.status_code == 307
+    location = resp.headers.get("location")
+    assert location is not None
+    assert "p01--telegram-stream-gateway" in location
+
+
+def test_permanent_stream_nonexistent_returns_404(monkeypatch):
+    from app.routers import playback
+    monkeypatch.setattr(playback, "require_user", lambda request: {"id": 1, "username": "tester"})
+
+    resp = client.get("/api/stream/phim-khong-ton-tai-xyz/tap-1.mp4", follow_redirects=False)
+    assert resp.status_code == 404
 
 
 def test_movie_for_slug_finds_neon_published_video():

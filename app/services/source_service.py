@@ -9,13 +9,97 @@ from app.core.database import engine
 from app.core.config import STREAM_SIGNING_SECRET, STREAM_URL_TTL_SECONDS
 from app.services.video_source_normalizer import get_allowed_iframe_hosts, normalize_source_url
 
-GATEWAY_STREAM_RE = re.compile(r'/v1/stream/([-\d]+)/(\d+)')
+GATEWAY_STREAM_RE = re.compile(r'/v1/(?:stream|info|thumb|video|file)/([-\d]+)/(\d+)')
 
 
 def is_telegram_gateway_url(url: str) -> bool:
     if not isinstance(url, str) or not url:
         return False
     return bool(GATEWAY_STREAM_RE.search(url))
+
+
+def get_permanent_stream_url(slug: str, episode: str | None = None) -> str:
+    """Generate the public, permanent, unexpiring stream URL for PHEPHIM.AI player."""
+    clean_slug = slug.removesuffix('.mp4')
+    if episode:
+        clean_ep = str(episode).removesuffix('.mp4')
+        return f"/api/stream/{clean_slug}/{clean_ep}.mp4"
+    return f"/api/stream/{clean_slug}.mp4"
+
+
+def resolve_stream_source(slug: str, episode: str | None = None) -> dict | None:
+    """Resolve active Telegram stream parameters (chat_id, message_id, raw_url) from Neon DB."""
+    clean_slug = slug.removesuffix('.mp4')
+    clean_ep = episode.removesuffix('.mp4') if episode else None
+
+    with engine.connect() as db:
+        # 1. Search movie_sources
+        if clean_ep:
+            query = text('''
+                SELECT s.id, s.movie_slug, s.episode_key, s.url, s.media_type, s.enabled
+                FROM movie_sources s
+                WHERE s.movie_slug = :slug
+                  AND s.episode_key = :ep
+                  AND s.enabled = true
+                ORDER BY s.sort_order, s.id
+            ''')
+            rows = db.execute(query, {'slug': clean_slug, 'ep': clean_ep}).mappings().all()
+        else:
+            query = text('''
+                SELECT s.id, s.movie_slug, s.episode_key, s.url, s.media_type, s.enabled
+                FROM movie_sources s
+                WHERE s.movie_slug = :slug
+                  AND s.enabled = true
+                ORDER BY s.sort_order, s.id
+            ''')
+            rows = db.execute(query, {'slug': clean_slug}).mappings().all()
+
+        for r in rows:
+            m = GATEWAY_STREAM_RE.search(r['url'])
+            if m:
+                return {
+                    'chat_id': int(m.group(1)),
+                    'message_id': int(m.group(2)),
+                    'raw_url': r['url'],
+                    'source_id': r['id'],
+                    'movie_slug': r['movie_slug'],
+                    'episode_key': r['episode_key'],
+                }
+
+        # 2. Fallback: search publish_records + telegram_media
+        if clean_ep:
+            p_query = text('''
+                SELECT p.movie_slug, p.episode_key, p.status, tm.chat_id, tm.message_id, tm.stream_url
+                FROM toolnet_auto.publish_records p
+                JOIN toolnet_auto.telegram_media tm ON tm.bvid = p.bvid
+                WHERE p.movie_slug = :slug
+                  AND p.episode_key = :ep
+                  AND p.status IN ('PUBLISHED', 'DRAFT')
+                ORDER BY p.id DESC LIMIT 1
+            ''')
+            row = db.execute(p_query, {'slug': clean_slug, 'ep': clean_ep}).mappings().first()
+        else:
+            p_query = text('''
+                SELECT p.movie_slug, p.episode_key, p.status, tm.chat_id, tm.message_id, tm.stream_url
+                FROM toolnet_auto.publish_records p
+                JOIN toolnet_auto.telegram_media tm ON tm.bvid = p.bvid
+                WHERE p.movie_slug = :slug
+                  AND p.status IN ('PUBLISHED', 'DRAFT')
+                ORDER BY p.id DESC LIMIT 1
+            ''')
+            row = db.execute(p_query, {'slug': clean_slug}).mappings().first()
+
+        if row:
+            return {
+                'chat_id': row['chat_id'],
+                'message_id': row['message_id'],
+                'raw_url': row['stream_url'],
+                'source_id': None,
+                'movie_slug': row['movie_slug'],
+                'episode_key': row['episode_key'],
+            }
+
+    return None
 
 
 def sign_telegram_gateway_url(url: str, ttl_seconds: int = STREAM_URL_TTL_SECONDS) -> str:
@@ -58,7 +142,7 @@ def safe_url(url, *, iframe=False):
             and parts.hostname.lower() in allowed
             and port in (None, 443)
         )
-    if url.startswith('/static/') and not url.startswith('//'):
+    if url.startswith(('/static/', '/api/stream/')) and not url.startswith('//'):
         return (
             not parts.scheme
             and not parts.netloc
@@ -84,12 +168,27 @@ def episode_exists(movie_slug, episode):
 
 def sources(movie_slug, episode=None):
     with engine.connect() as db:
-        rows = db.execute(
-            text('''SELECT id, label, media_type, url, attribution FROM movie_sources
-                WHERE movie_slug=:slug AND episode_key IS NOT DISTINCT FROM :episode AND enabled
-                ORDER BY sort_order, id'''),
-            {'slug': movie_slug, 'episode': episode},
-        ).mappings().all()
+        if episode is not None:
+            rows = db.execute(
+                text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
+                    WHERE movie_slug=:slug AND episode_key=:episode AND enabled
+                    ORDER BY sort_order, id'''),
+                {'slug': movie_slug, 'episode': episode},
+            ).mappings().all()
+        else:
+            rows = db.execute(
+                text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
+                    WHERE movie_slug=:slug AND episode_key IS NULL AND enabled
+                    ORDER BY sort_order, id'''),
+                {'slug': movie_slug},
+            ).mappings().all()
+            if not rows:
+                rows = db.execute(
+                    text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
+                        WHERE movie_slug=:slug AND enabled
+                        ORDER BY sort_order, id'''),
+                    {'slug': movie_slug},
+                ).mappings().all()
 
         cleaned = []
         for r in rows:
@@ -105,9 +204,12 @@ def sources(movie_slug, episode=None):
                 row_dict['platform'] = 'iframe' if row_dict['media_type'] == 'iframe' else 'direct'
                 row_dict['external_url'] = row_dict['url']
 
-            # Sign Telegram Gateway URLs dynamically for HTML5 player
-            if is_telegram_gateway_url(row_dict['url']):
-                row_dict['url'] = sign_telegram_gateway_url(row_dict['url'])
+            # Use permanent fixed URL on PHEPHIM.AI for Telegram Gateway video streams
+            if is_telegram_gateway_url(row_dict['url']) or row_dict['url'].startswith('/api/stream/'):
+                ep_key = row_dict.get('episode_key')
+                row_dict['url'] = get_permanent_stream_url(row_dict.get('movie_slug') or movie_slug, ep_key)
+                row_dict['media_type'] = 'mp4'
+                row_dict['platform'] = 'direct'
 
             if safe_url(row_dict['url'], iframe=row_dict['media_type'] == 'iframe'):
                 cleaned.append(row_dict)

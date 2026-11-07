@@ -1,10 +1,70 @@
 import json
-from functools import lru_cache
+import logging
 from app.core.config import ROOT
 
-@lru_cache(maxsize=1)
+logger = logging.getLogger('phe.catalog')
+
+def get_db_movies() -> list[dict]:
+    """Dynamically load published and draft movies directly from Neon DB."""
+    try:
+        from app.core.database import engine
+        from sqlalchemy import text
+        with engine.connect() as db:
+            rows = db.execute(
+                text('''
+                    SELECT p.movie_slug, p.title, p.bvid, p.published_at, p.status,
+                           v.thumbnail_url, v.duration_display,
+                           m.approved_title
+                    FROM toolnet_auto.publish_records p
+                    LEFT JOIN toolnet_auto.bilibili_videos v ON p.bvid = v.bvid
+                    LEFT JOIN toolnet_auto.video_metadata m ON p.bvid = m.bvid
+                    WHERE p.status IN ('PUBLISHED', 'DRAFT')
+                    ORDER BY p.published_at DESC
+                ''')
+            ).mappings().all()
+
+            db_movies = []
+            seen_slugs = set()
+            for r in rows:
+                slug = r['movie_slug']
+                if slug in seen_slugs:
+                    continue
+                seen_slugs.add(slug)
+                poster = r.get('thumbnail_url') or ''
+                is_draft = (r.get('status') == 'DRAFT')
+                display_title = r.get('approved_title') or r.get('title') or slug
+                db_movies.append({
+                    'slug': slug,
+                    'title': display_title,
+                    'year': r['published_at'].year if r.get('published_at') else 2026,
+                    'country': 'Trung Quốc',
+                    'genre': 'Thuyết Minh, Phim Lẻ',
+                    'rating': 8.5,
+                    'status': 'Phim lẻ',
+                    'poster': poster,
+                    'backdrop': poster,
+                    'bvid': r.get('bvid'),
+                    'demo': is_draft,
+                    'draft': is_draft,
+                })
+            return db_movies
+    except Exception as e:
+        logger.debug("Catalog DB lookup error: %s", e)
+        return []
+
 def catalog():
-    return {movie['slug']: movie for movie in json.loads((ROOT / 'app/data/movies.json').read_text(encoding='utf-8'))}
+    base = {}
+    try:
+        data_path = ROOT / 'app/data/movies.json'
+        if data_path.exists():
+            base = {movie['slug']: movie for movie in json.loads(data_path.read_text(encoding='utf-8'))}
+    except Exception:
+        pass
+
+    for dm in get_db_movies():
+        base[dm['slug']] = dm
+
+    return base
 
 def movie_for_slug(slug):
     m = catalog().get(slug)
@@ -16,10 +76,11 @@ def movie_for_slug(slug):
         with engine.connect() as db:
             row = db.execute(
                 text('''
-                    SELECT p.movie_slug, p.title, p.bvid, p.published_at,
-                           v.thumbnail_url
+                    SELECT p.movie_slug, p.title, p.bvid, p.published_at, p.status,
+                           v.thumbnail_url, m.approved_title
                     FROM toolnet_auto.publish_records p
                     LEFT JOIN toolnet_auto.bilibili_videos v ON p.bvid = v.bvid
+                    LEFT JOIN toolnet_auto.video_metadata m ON p.bvid = m.bvid
                     WHERE p.movie_slug = :slug
                     LIMIT 1
                 '''),
@@ -27,9 +88,11 @@ def movie_for_slug(slug):
             ).mappings().first()
             if row:
                 poster = row.get('thumbnail_url') or ''
+                is_draft = (row.get('status') == 'DRAFT')
+                display_title = row.get('approved_title') or row.get('title') or slug
                 return {
                     'slug': slug,
-                    'title': row['title'] or slug,
+                    'title': display_title,
                     'year': row['published_at'].year if row.get('published_at') else 2026,
                     'country': 'Trung Quốc',
                     'genre': 'Thuyết Minh, Phim Lẻ',
@@ -38,8 +101,8 @@ def movie_for_slug(slug):
                     'poster': poster,
                     'backdrop': poster,
                     'bvid': row.get('bvid'),
-                    'demo': False,
-                    'draft': False,
+                    'demo': is_draft,
+                    'draft': is_draft,
                 }
             src = db.execute(
                 text('SELECT movie_slug, label FROM movie_sources WHERE movie_slug = :slug LIMIT 1'),
