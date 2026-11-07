@@ -8,6 +8,7 @@ from sqlalchemy import text, bindparam
 from app.core.database import engine
 from app.core.config import STREAM_SIGNING_SECRET, STREAM_URL_TTL_SECONDS
 from app.services.video_source_normalizer import get_allowed_iframe_hosts, normalize_source_url
+from app.services.catalog import MOVIE_ALIASES
 
 GATEWAY_STREAM_RE = re.compile(r'/v1/(?:stream|info|thumb|video|file)/([-\d]+)/(\d+)')
 
@@ -29,7 +30,7 @@ def get_permanent_stream_url(slug: str, episode: str | None = None) -> str:
 
 def resolve_stream_source(slug: str, episode: str | None = None) -> dict | None:
     """Resolve active Telegram stream parameters (chat_id, message_id, raw_url) from Neon DB."""
-    clean_slug = slug.removesuffix('.mp4')
+    clean_slug = MOVIE_ALIASES.get(slug.removesuffix('.mp4'), slug.removesuffix('.mp4'))
     clean_ep = episode.removesuffix('.mp4') if episode else None
 
     with engine.connect() as db:
@@ -152,12 +153,13 @@ def safe_url(url, *, iframe=False):
 
 
 def episodes(movie_slug):
+    target_slug = MOVIE_ALIASES.get(movie_slug, movie_slug)
     with engine.connect() as db:
         return [
             dict(row)
             for row in db.execute(
                 text('SELECT episode_key, title, sort_order FROM movie_episodes WHERE movie_slug=:slug ORDER BY sort_order, episode_key'),
-                {'slug': movie_slug},
+                {'slug': target_slug},
             ).mappings()
         ]
 
@@ -167,27 +169,28 @@ def episode_exists(movie_slug, episode):
 
 
 def sources(movie_slug, episode=None):
+    target_slug = MOVIE_ALIASES.get(movie_slug, movie_slug)
     with engine.connect() as db:
         if episode is not None:
             rows = db.execute(
                 text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
                     WHERE movie_slug=:slug AND episode_key=:episode AND enabled
                     ORDER BY sort_order, id'''),
-                {'slug': movie_slug, 'episode': episode},
+                {'slug': target_slug, 'episode': episode},
             ).mappings().all()
         else:
             rows = db.execute(
                 text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
                     WHERE movie_slug=:slug AND episode_key IS NULL AND enabled
                     ORDER BY sort_order, id'''),
-                {'slug': movie_slug},
+                {'slug': target_slug},
             ).mappings().all()
             if not rows:
                 rows = db.execute(
                     text('''SELECT id, label, media_type, url, attribution, movie_slug, episode_key FROM movie_sources
                         WHERE movie_slug=:slug AND enabled
                         ORDER BY sort_order, id'''),
-                    {'slug': movie_slug},
+                    {'slug': target_slug},
                 ).mappings().all()
 
         cleaned = []

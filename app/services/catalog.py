@@ -4,6 +4,10 @@ from app.core.config import ROOT
 
 logger = logging.getLogger('phe.catalog')
 
+MOVIE_ALIASES = {
+    'phim': 'den-tham-anh-em-nghia-hiep-cua-ban-trai-bat-ngo-bi-cuon-vao-am-muu-tinh-vi',
+}
+
 def get_db_movies() -> list[dict]:
     """Dynamically load published and draft movies directly from Neon DB."""
     try:
@@ -49,7 +53,7 @@ def get_db_movies() -> list[dict]:
                 })
             return db_movies
     except Exception as e:
-        logger.debug("Catalog DB lookup error: %s", e)
+        logger.error("Catalog DB lookup error: %s", e, exc_info=True)
         return []
 
 def catalog():
@@ -67,7 +71,8 @@ def catalog():
     return base
 
 def movie_for_slug(slug):
-    m = catalog().get(slug)
+    target_slug = MOVIE_ALIASES.get(slug, slug)
+    m = catalog().get(target_slug)
     if m:
         return m
     try:
@@ -81,17 +86,18 @@ def movie_for_slug(slug):
                     FROM toolnet_auto.publish_records p
                     LEFT JOIN toolnet_auto.bilibili_videos v ON p.bvid = v.bvid
                     LEFT JOIN toolnet_auto.video_metadata m ON p.bvid = m.bvid
-                    WHERE p.movie_slug = :slug
+                    WHERE p.movie_slug = :slug OR p.movie_slug = :target_slug
+                    ORDER BY (p.movie_slug = :target_slug) DESC
                     LIMIT 1
                 '''),
-                {'slug': slug}
+                {'slug': slug, 'target_slug': target_slug}
             ).mappings().first()
             if row:
                 poster = row.get('thumbnail_url') or ''
                 is_draft = (row.get('status') == 'DRAFT')
-                display_title = row.get('approved_title') or row.get('title') or slug
+                display_title = row.get('approved_title') or row.get('title') or target_slug
                 return {
-                    'slug': slug,
+                    'slug': row['movie_slug'],
                     'title': display_title,
                     'year': row['published_at'].year if row.get('published_at') else 2026,
                     'country': 'Trung Quốc',
@@ -105,13 +111,13 @@ def movie_for_slug(slug):
                     'draft': is_draft,
                 }
             src = db.execute(
-                text('SELECT movie_slug, label FROM movie_sources WHERE movie_slug = :slug LIMIT 1'),
-                {'slug': slug}
+                text('SELECT movie_slug, label FROM movie_sources WHERE movie_slug = :slug OR movie_slug = :target_slug LIMIT 1'),
+                {'slug': slug, 'target_slug': target_slug}
             ).mappings().first()
             if src:
                 return {
-                    'slug': slug,
-                    'title': slug.replace('-', ' ').title(),
+                    'slug': src['movie_slug'],
+                    'title': src['movie_slug'].replace('-', ' ').title(),
                     'year': 2026,
                     'country': 'Trung Quốc',
                     'genre': 'Thuyết Minh, Phim Lẻ',
@@ -122,8 +128,8 @@ def movie_for_slug(slug):
                     'demo': False,
                     'draft': False,
                 }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error("Database lookup error in movie_for_slug(%s): %s", slug, e, exc_info=True)
     return None
 
 def get_public_movies():

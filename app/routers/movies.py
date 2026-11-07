@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from app.routers.pages import templates
 from app.services.auth import require_user
-from app.services.catalog import CATEGORY_META, get_movies_by_category, get_genre_catalog, movie_for_slug
+from app.services.catalog import CATEGORY_META, get_movies_by_category, get_genre_catalog, movie_for_slug, MOVIE_ALIASES
 
 router = APIRouter()
 SLUGS = {'dune-part-two','oppenheimer','interstellar','parasite','spirited-away','breaking-bad','the-last-of-us','big-buck-bunny-demo','vo-ngoai-tinh-voi-sep'}
@@ -63,6 +63,8 @@ def the_loai(request: Request):
 @router.get('/phim/{slug}')
 @router.get('/phim/{slug}/index.html')
 def detail(request: Request, slug: str):
+    if slug in MOVIE_ALIASES:
+        return RedirectResponse(f"/phim/{MOVIE_ALIASES[slug]}/", status_code=301)
     if not movie_for_slug(slug):
         raise HTTPException(404)
     return templates.TemplateResponse(request=request, name='movies/detail.html')
@@ -71,6 +73,12 @@ def detail(request: Request, slug: str):
 @router.get('/xem-phim/{slug}')
 @router.get('/xem-phim/{slug}/index.html')
 def watch(request: Request, slug: str):
+    if slug in MOVIE_ALIASES:
+        episode = request.query_params.get('episode', '')
+        dest = f"/xem-phim/{MOVIE_ALIASES[slug]}/"
+        if episode:
+            dest += f"?episode={quote(episode, safe='')}"
+        return RedirectResponse(dest, status_code=301)
     # Keep authorization before page lookup, matching the original handler.
     try:
         require_user(request)

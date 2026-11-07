@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Query
 from fastapi.responses import RedirectResponse
 from app.schemas.playback import WatchProgress
 from app.services.auth import require_user
-from app.services.catalog import movie_for_slug, catalog
+from app.services.catalog import movie_for_slug, catalog, MOVIE_ALIASES
 from app.services.source_service import (
     episodes,
     episode_exists,
@@ -27,22 +27,27 @@ def checked_episode(slug, episode):
 def movie_catalog(): return {'movies':list(catalog().values())}
 
 @router.get('/api/movies/{slug}')
-def movie(slug:str): return checked_movie(slug)
+def movie(slug:str):
+    target_slug = MOVIE_ALIASES.get(slug, slug)
+    return checked_movie(target_slug)
 
 @router.get('/api/movies/{slug}/episodes')
 def movie_episodes(slug:str):
-    checked_movie(slug)
-    return {'movie_slug':slug,'episodes':episodes(slug)}
+    target_slug = MOVIE_ALIASES.get(slug, slug)
+    checked_movie(target_slug)
+    return {'movie_slug':target_slug,'episodes':episodes(target_slug)}
 
 @router.get('/api/movies/{slug}/playback')
 def movie_playback(slug:str,request:Request):
-    require_user(request); checked_movie(slug)
-    return {'movie_slug':slug,'episode':None,'sources':sources(slug)}
+    target_slug = MOVIE_ALIASES.get(slug, slug)
+    require_user(request); checked_movie(target_slug)
+    return {'movie_slug':target_slug,'episode':None,'sources':sources(target_slug)}
 
 @router.get('/api/movies/{slug}/episodes/{episode}/playback')
 def episode_playback(slug:str,episode:str,request:Request):
-    require_user(request); checked_movie(slug); checked_episode(slug,episode)
-    return {'movie_slug':slug,'episode':episode,'sources':sources(slug,episode)}
+    target_slug = MOVIE_ALIASES.get(slug, slug)
+    require_user(request); checked_movie(target_slug); checked_episode(target_slug,episode)
+    return {'movie_slug':target_slug,'episode':episode,'sources':sources(target_slug,episode)}
 
 @router.get('/api/users/me/watch-progress/{slug}')
 def get_progress(slug:str,request:Request,episode:str|None=Query(default=None, min_length=1,max_length=64,pattern=r'^[A-Za-z0-9_-]+$')):
