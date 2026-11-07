@@ -98,5 +98,47 @@
     "poster": "",
     "backdrop": "",
     "demo": true
+  },
+  {
+    "slug": "test-phim",
+    "title": "[TEST] 【成何体统】短剧版预告",
+    "year": 2026,
+    "country": "Trung Quốc",
+    "genre": "Thuyết Minh, Phim Lẻ",
+    "rating": 8.5,
+    "status": "Phim lẻ",
+    "poster": "http://i2.hdslb.com/bfs/archive/fac773cc00a8730e56c922e116a58021622995ba.png",
+    "backdrop": "http://i2.hdslb.com/bfs/archive/fac773cc00a8730e56c922e116a58021622995ba.png",
+    "bvid": "BV13mKbzvExP",
+    "demo": true,
+    "draft": true
+  },
+  {
+    "slug": "test-04",
+    "title": "[TEST] 背刺我的兄弟，终被人生反噬04",
+    "year": 2026,
+    "country": "Trung Quốc",
+    "genre": "Thuyết Minh, Phim Lẻ",
+    "rating": 8.5,
+    "status": "Phim lẻ",
+    "poster": "http://i2.hdslb.com/bfs/archive/1f8dce24af07ae7f7b15d8bfea3dea7dd3dd30fc.jpg",
+    "backdrop": "http://i2.hdslb.com/bfs/archive/1f8dce24af07ae7f7b15d8bfea3dea7dd3dd30fc.jpg",
+    "bvid": "BV1au4e6EEMi",
+    "demo": true,
+    "draft": true
+  },
+  {
+    "slug": "phim",
+    "title": "登门拜见男友义兄，不料卷入一场精心布局阴谋",
+    "year": 2026,
+    "country": "Trung Quốc",
+    "genre": "Thuyết Minh, Phim Lẻ",
+    "rating": 8.5,
+    "status": "Phim lẻ",
+    "poster": "http://i1.hdslb.com/bfs/archive/85aa7315f11371bac625db7bada1d33a35e4c014.jpg",
+    "backdrop": "http://i1.hdslb.com/bfs/archive/85aa7315f11371bac625db7bada1d33a35e4c014.jpg",
+    "bvid": "BV1qJx76CEqo",
+    "demo": false,
+    "draft": false
   }
 ]

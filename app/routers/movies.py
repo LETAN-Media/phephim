@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from app.routers.pages import templates
 from app.services.auth import require_user
-from app.services.catalog import CATEGORY_META, get_movies_by_category, get_genre_catalog
+from app.services.catalog import CATEGORY_META, get_movies_by_category, get_genre_catalog, movie_for_slug
 
 router = APIRouter()
 SLUGS = {'dune-part-two','oppenheimer','interstellar','parasite','spirited-away','breaking-bad','the-last-of-us','big-buck-bunny-demo','vo-ngoai-tinh-voi-sep'}
@@ -63,7 +63,7 @@ def the_loai(request: Request):
 @router.get('/phim/{slug}')
 @router.get('/phim/{slug}/index.html')
 def detail(request: Request, slug: str):
-    if slug not in SLUGS:
+    if not movie_for_slug(slug):
         raise HTTPException(404)
     return templates.TemplateResponse(request=request, name='movies/detail.html')
 
@@ -84,6 +84,6 @@ def watch(request: Request, slug: str):
         response = RedirectResponse('/dang-nhap/?next=' + quote(target, safe=''), status_code=303)
         response.headers['Cache-Control'] = 'private, no-store'
         return response
-    if slug not in SLUGS:
+    if not movie_for_slug(slug):
         raise HTTPException(404)
     return templates.TemplateResponse(request=request, name='movies/watch.html')

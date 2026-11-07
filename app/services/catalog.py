@@ -7,7 +7,61 @@ def catalog():
     return {movie['slug']: movie for movie in json.loads((ROOT / 'app/data/movies.json').read_text(encoding='utf-8'))}
 
 def movie_for_slug(slug):
-    return catalog().get(slug)
+    m = catalog().get(slug)
+    if m:
+        return m
+    try:
+        from app.core.database import engine
+        from sqlalchemy import text
+        with engine.connect() as db:
+            row = db.execute(
+                text('''
+                    SELECT p.movie_slug, p.title, p.bvid, p.published_at,
+                           v.thumbnail_url
+                    FROM toolnet_auto.publish_records p
+                    LEFT JOIN toolnet_auto.bilibili_videos v ON p.bvid = v.bvid
+                    WHERE p.movie_slug = :slug
+                    LIMIT 1
+                '''),
+                {'slug': slug}
+            ).mappings().first()
+            if row:
+                poster = row.get('thumbnail_url') or ''
+                return {
+                    'slug': slug,
+                    'title': row['title'] or slug,
+                    'year': row['published_at'].year if row.get('published_at') else 2026,
+                    'country': 'Trung Quốc',
+                    'genre': 'Thuyết Minh, Phim Lẻ',
+                    'rating': 8.5,
+                    'status': 'Phim lẻ',
+                    'poster': poster,
+                    'backdrop': poster,
+                    'bvid': row.get('bvid'),
+                    'demo': False,
+                    'draft': False,
+                }
+            src = db.execute(
+                text('SELECT movie_slug, label FROM movie_sources WHERE movie_slug = :slug LIMIT 1'),
+                {'slug': slug}
+            ).mappings().first()
+            if src:
+                return {
+                    'slug': slug,
+                    'title': slug.replace('-', ' ').title(),
+                    'year': 2026,
+                    'country': 'Trung Quốc',
+                    'genre': 'Thuyết Minh, Phim Lẻ',
+                    'rating': 8.5,
+                    'status': 'Phim lẻ',
+                    'poster': '',
+                    'backdrop': '',
+                    'demo': False,
+                    'draft': False,
+                }
+    except Exception:
+        pass
+    return None
 
 def get_public_movies():
     return [m for m in catalog().values() if not m.get('demo')]

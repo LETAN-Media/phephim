@@ -1,10 +1,10 @@
 import {attachHls} from './hls-adapter.js';
 import {attachDash} from './dash-adapter.js';
 
-export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, onSourceChange}) {
+export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, onSourceChange, onRefreshSources}) {
   const playButton = document.querySelector('#player-play');
   let sources = [], adapter = null, index = 0, generation = 0, timeout = null;
-  let failures = new Set(), restore = 0, userStarted = false;
+  let failures = new Set(), restore = 0, userStarted = false, hasRefreshed = false;
 
   function clearTimer() {
     if (timeout !== null) {
@@ -68,7 +68,7 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
     timeout = setTimeout(() => failure(current, 'Video tải quá lâu. Kiểm tra kết nối hoặc thử lại.'), 20000);
   }
 
-  function failure(current, message, errorCode = null) {
+  async function failure(current, message, errorCode = null) {
     if (current !== generation) return;
     clearTimer();
     failures.add(index);
@@ -78,6 +78,24 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
       onMessage('Đang chuyển sang nguồn dự phòng…');
       attach(next, {resume: true});
       return;
+    }
+    // If sources failed (e.g. signed URL expired), attempt dynamic refresh once and preserve playback position
+    if (typeof onRefreshSources === 'function' && !hasRefreshed) {
+      hasRefreshed = true;
+      try {
+        const savedPos = Number.isFinite(video.currentTime) ? video.currentTime : restore;
+        onMessage('Đang làm mới liên kết phát…');
+        const fresh = await onRefreshSources();
+        if (fresh && fresh.length > 0) {
+          sources = fresh;
+          failures.clear();
+          restore = savedPos;
+          attach(0, {resume: true});
+          return;
+        }
+      } catch (err) {
+        // Fall back to normal fatal handling
+      }
     }
     ++generation;
     stopActive();
@@ -237,6 +255,7 @@ export function sourceManager(video, iframe, {onMessage, onCredit, onAttempt, on
       sources = nextSources || [];
       restore = position;
       userStarted = false;
+      hasRefreshed = false;
       failures.clear();
       index = 0;
       if (sources.length) {

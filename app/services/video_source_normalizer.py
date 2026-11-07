@@ -184,7 +184,7 @@ def normalize_direct_stream(url: str) -> dict | None:
     parts = urlsplit(url)
     path_lower = parts.path.lower()
 
-    if path_lower.endswith('.mp4'):
+    if path_lower.endswith('.mp4') or '/v1/stream/' in path_lower:
         media_type = 'mp4'
     elif '.m3u8' in path_lower:
         media_type = 'hls'

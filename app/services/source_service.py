@@ -1,8 +1,43 @@
+import hashlib
+import hmac
 import os
-from urllib.parse import urlsplit
+import re
+import time
+from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 from sqlalchemy import text, bindparam
 from app.core.database import engine
+from app.core.config import STREAM_SIGNING_SECRET, STREAM_URL_TTL_SECONDS
 from app.services.video_source_normalizer import get_allowed_iframe_hosts, normalize_source_url
+
+GATEWAY_STREAM_RE = re.compile(r'/v1/stream/([-\d]+)/(\d+)')
+
+
+def is_telegram_gateway_url(url: str) -> bool:
+    if not isinstance(url, str) or not url:
+        return False
+    return bool(GATEWAY_STREAM_RE.search(url))
+
+
+def sign_telegram_gateway_url(url: str, ttl_seconds: int = STREAM_URL_TTL_SECONDS) -> str:
+    """Sign a Telegram Stream Gateway URL dynamically with HMAC-SHA256."""
+    secret = STREAM_SIGNING_SECRET
+    if not secret or not url:
+        return url
+    parts = urlsplit(url)
+    m = GATEWAY_STREAM_RE.search(parts.path)
+    if not m:
+        return url
+    chat_id = int(m.group(1))
+    message_id = int(m.group(2))
+    exp = int(time.time()) + ttl_seconds
+    msg = f"{chat_id}:{message_id}:{exp}".encode()
+    sig = hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()
+
+    query = parse_qs(parts.query)
+    query['exp'] = [str(exp)]
+    query['sig'] = [sig]
+    new_query = urlencode(query, doseq=True)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, new_query, parts.fragment))
 
 
 def safe_url(url, *, iframe=False):
@@ -69,6 +104,10 @@ def sources(movie_slug, episode=None):
             except ValueError:
                 row_dict['platform'] = 'iframe' if row_dict['media_type'] == 'iframe' else 'direct'
                 row_dict['external_url'] = row_dict['url']
+
+            # Sign Telegram Gateway URLs dynamically for HTML5 player
+            if is_telegram_gateway_url(row_dict['url']):
+                row_dict['url'] = sign_telegram_gateway_url(row_dict['url'])
 
             if safe_url(row_dict['url'], iframe=row_dict['media_type'] == 'iframe'):
                 cleaned.append(row_dict)

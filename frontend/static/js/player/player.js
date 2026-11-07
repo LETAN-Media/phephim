@@ -52,6 +52,11 @@ const manager = sourceManager(video, iframe, {
     retry.hidden = true;
     demoLink.hidden = true;
     externalLink.hidden = true;
+  },
+  onRefreshSources: async () => {
+    const route = episode ? `${movieUrl}/episodes/${encodeURIComponent(episode)}/playback` : `${movieUrl}/playback`;
+    const playback = await json(route);
+    return playback.sources || [];
   }
 });
 

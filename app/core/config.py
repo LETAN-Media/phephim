@@ -25,3 +25,7 @@ DEFAULT_ALLOWED_ORIGINS = {
 
 COOKIE = '__Host-phe_session'
 CSRF_COOKIE = '__Host-phe_csrf'
+
+TELEGRAM_GATEWAY_URL = os.getenv('TELEGRAM_GATEWAY_URL', 'https://p01--telegram-stream-gateway--r4v2pzg2klvq.code.run').rstrip('/')
+STREAM_SIGNING_SECRET = os.getenv('STREAM_SIGNING_SECRET', '')
+STREAM_URL_TTL_SECONDS = int(os.getenv('STREAM_URL_TTL_SECONDS', '21600'))
